@@ -1,0 +1,2361 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>موسوعة Ansible التفاعلية الشاملة — من الصفر إلى الاحتراف 100%</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Cairo', 'sans-serif'],
+            mono: ['Fira Code', 'monospace']
+          },
+          colors: {
+            ans: {
+              red: '#EE0000',
+              coral: '#FF4D4D',
+              dark: '#990000',
+              bg: '#090D16',
+              card: '#111827',
+              border: '#1F2937'
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+      background-color: #090D16;
+      color: #F1F5F9;
+      overflow-x: hidden;
+    }
+    .code-ltr {
+      direction: ltr;
+      text-align: left;
+      font-family: 'Fira Code', monospace;
+    }
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090D16;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #EE0000;
+    }
+    @keyframes pulseGlowRed {
+      0%, 100% { filter: drop-shadow(0 0 6px rgba(238, 0, 0, 0.65)); }
+      50% { filter: drop-shadow(0 0 16px rgba(245, 158, 11, 0.85)); }
+    }
+    .glow-svg {
+      animation: pulseGlowRed 3s infinite ease-in-out;
+    }
+    @keyframes dashFlow {
+      to {
+        stroke-dashoffset: -40;
+      }
+    }
+    .animate-dash {
+      stroke-dasharray: 8 6;
+      animation: dashFlow 1.1s linear infinite;
+    }
+    .glass-card {
+      background: rgba(17, 24, 39, 0.88);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(238, 0, 0, 0.25);
+    }
+    .tab-active {
+      background: linear-gradient(135deg, #EE0000 0%, #B91C1C 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 15px rgba(238, 0, 0, 0.4);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-red-600 selection:text-white">
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-5 left-5 z-50 hidden transform transition-all duration-300 bg-red-950/95 border border-red-400 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3">
+    <span id="toast-icon" class="text-xl">✅</span>
+    <span id="toast-msg" class="text-sm font-semibold">تم النسخ بنجاح!</span>
+  </div>
+
+  <!-- Top Header & Progress Bar -->
+  <header class="sticky top-0 z-40 bg-[#090D16]/90 backdrop-blur-md border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-[#EE0000] to-rose-700 flex items-center justify-center shadow-lg shadow-red-600/30">
+          <!-- Ansible 'A' Emblem SVG -->
+          <svg class="w-7 h-7 text-white" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.57 14.82L12.7 14.5l-2.85-2.32 1.88-4.78 3.84 9.42zm-5.41-3.37l1.97 1.6-2.92.82.95-2.42z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg md:text-xl font-black bg-gradient-to-l from-red-400 via-amber-400 to-rose-300 bg-clip-text text-transparent">
+              موسوعة Ansible التفاعلية 100%
+            </h1>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/40 font-semibold">Red Hat Config &amp; Automation</span>
+          </div>
+          <p class="text-xs text-slate-400">من الصفر إلى الاحتراف المعماري | AWS • Azure • GCP • Huawei • Linux/Windows/Network</p>
+        </div>
+      </div>
+
+      <!-- Progress Tracker -->
+      <div class="flex items-center gap-4 bg-slate-900/90 border border-slate-800 px-4 py-2 rounded-xl">
+        <div class="text-right">
+          <div class="flex items-center justify-between gap-3">
+            <span class="text-xs text-slate-400">نسبة الإتقان الشخصي</span>
+            <span id="mastery-percent" class="text-sm font-black text-emerald-400">0%</span>
+          </div>
+          <div class="w-36 md:w-48 h-2 bg-slate-800 rounded-full overflow-hidden mt-1">
+            <div id="mastery-bar" class="h-full bg-gradient-to-l from-emerald-400 to-red-500 transition-all duration-500" style="width: 0%"></div>
+          </div>
+        </div>
+        <button id="reset-progress-btn" class="text-xs text-slate-400 hover:text-rose-400 transition px-2 py-1 rounded border border-slate-700 hover:border-rose-500/40" title="إعادة ضبط التقدم">
+          إعادة ضبط
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="max-w-7xl mx-auto px-4 pb-2 overflow-x-auto">
+      <div class="flex items-center gap-1.5 min-w-max" id="main-nav">
+        <button data-tab="roadmap" class="nav-tab tab-active px-3.5 py-2 rounded-lg text-xs md:text-sm font-bold transition flex items-center gap-2">
+          <span>🗺️</span><span>خارطة الطريق والخطوات (8 مراحل)</span>
+        </button>
+        <button data-tab="visualizer" class="nav-tab bg-slate-900/80 hover:bg-slate-800 text-slate-300 px-3.5 py-2 rounded-lg text-xs md:text-sm font-bold transition flex items-center gap-2">
+          <span>⚡</span><span>المحاكي البصري (SSH Push &amp; Idempotency &amp; Precedence)</span>
+        </button>
+        <button data-tab="multicloud" class="nav-tab bg-slate-900/80 hover:bg-slate-800 text-slate-300 px-3.5 py-2 rounded-lg text-xs md:text-sm font-bold transition flex items-center gap-2">
+          <span>☁️</span><span>مختبر السحابات الخمس + Terraform Integration</span>
+        </button>
+        <button data-tab="glossary" class="nav-tab bg-slate-900/80 hover:bg-slate-800 text-slate-300 px-3.5 py-2 rounded-lg text-xs md:text-sm font-bold transition flex items-center gap-2">
+          <span>📚</span><span>القاموس الشامل للمفاهيم و Jinja2 و Modules</span>
+        </button>
+        <button data-tab="interview" class="nav-tab bg-slate-900/80 hover:bg-slate-800 text-slate-300 px-3.5 py-2 rounded-lg text-xs md:text-sm font-bold transition flex items-center gap-2">
+          <span>🎯</span><span>بنك أسئلة المقابلات + الاختبار المهني</span>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-6 space-y-8">
+
+    <!-- ==================== TAB 1: ROADMAP (ZERO TO HERO STEPS) ==================== -->
+    <section id="tab-roadmap" class="tab-panel space-y-6">
+      <!-- Hero Banner -->
+      <div class="glass-card rounded-2xl p-6 md:p-8 relative overflow-hidden">
+        <div class="absolute -left-20 -top-20 w-72 h-72 bg-red-600/20 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
+          <div class="lg:col-span-2 space-y-3">
+            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+              ✨ منهج متكامل خطوة بخطوة من الصفر إلى Automation Architect
+            </span>
+            <h2 class="text-2xl md:text-3xl font-black text-white leading-snug">
+              كيف تذاكر <span class="text-red-500">Ansible</span> وتتقنه بنسبة 100%؟
+            </h2>
+            <p class="text-slate-300 text-sm md:text-base leading-relaxed">
+              تُعد أداة <strong>Ansible</strong> (من شركة Red Hat) المعيار الذهبي في <strong>Configuration Management</strong> وأتمتة الخوادم والشبكات والسحابات. تتميز بأنها <strong>Agentless (بدون تثبيت أي عميل على السيرفرات المستهدفة)</strong>، وتعتمد على مبدأ <strong>Idempotency (التكرار الآمن دون تغيير غير ضروري)</strong> عبر بروتوكول SSH أو WinRM أو Cloud APIs. بينما ينشئ <strong>Terraform</strong> البنية التحتية، يقوم <strong>Ansible</strong> بتهيئة السيرفرات ونشر التطبيقات وتأمين الأنظمة!
+            </p>
+            <div class="flex flex-wrap gap-2 pt-2">
+              <button onclick="switchTab('visualizer')" class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs md:text-sm transition shadow-lg shadow-red-600/30">
+                شغّل المحاكي البصري لتنفيذ Playbook ⚡
+              </button>
+              <button onclick="switchTab('multicloud')" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 font-bold text-xs md:text-sm transition">
+                جرب Dynamic Inventory لـ AWS و Azure و GCP و Huawei ☁️
+              </button>
+            </div>
+          </div>
+
+          <!-- Interactive Architecture Mini-Diagram -->
+          <div class="bg-slate-950/90 border border-slate-800 rounded-xl p-4 flex flex-col items-center">
+            <p class="text-xs font-bold text-red-400 mb-2">الرسوم البصرية: المعمارية بدون عميل (Agentless Architecture)</p>
+            <svg viewBox="0 0 360 190" class="w-full h-auto max-w-xs glow-svg">
+              <defs>
+                <linearGradient id="gradAns" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#EE0000"/>
+                  <stop offset="100%" stop-color="#991B1B"/>
+                </linearGradient>
+              </defs>
+              <!-- YAML Playbook & Inventory -->
+              <rect x="8" y="45" width="82" height="100" rx="10" fill="#1E293B" stroke="#64748B" stroke-width="1.5"/>
+              <text x="49" y="70" text-anchor="middle" fill="#F87171" font-size="10" font-weight="bold">Playbook</text>
+              <text x="49" y="86" text-anchor="middle" fill="#CBD5E1" font-size="9">site.yml</text>
+              <line x1="18" y1="96" x2="80" y2="96" stroke="#334155"/>
+              <text x="49" y="114" text-anchor="middle" fill="#38BDF8" font-size="10" font-weight="bold">Inventory</text>
+              <text x="49" y="130" text-anchor="middle" fill="#94A3B8" font-size="8">Static / Cloud</text>
+
+              <!-- Arrow 1 -->
+              <line x1="90" y1="95" x2="128" y2="95" stroke="#EF4444" stroke-width="2.5" class="animate-dash"/>
+
+              <!-- Control Node -->
+              <rect x="128" y="45" width="96" height="100" rx="12" fill="url(#gradAns)" stroke="#FCA5A5" stroke-width="2"/>
+              <text x="176" y="73" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="bold">Control Node</text>
+              <text x="176" y="90" text-anchor="middle" fill="#FEE2E2" font-size="9">Ansible Engine</text>
+              <rect x="138" y="103" width="76" height="28" rx="6" fill="#0F172A"/>
+              <text x="176" y="121" text-anchor="middle" fill="#FBBF24" font-size="8.5" font-weight="bold">SSH / WinRM / API</text>
+
+              <!-- Arrows to Managed Nodes -->
+              <line x1="224" y1="65" x2="268" y2="35" stroke="#FBBF24" stroke-width="2" class="animate-dash"/>
+              <line x1="224" y1="95" x2="268" y2="95" stroke="#FBBF24" stroke-width="2" class="animate-dash"/>
+              <line x1="224" y1="125" x2="268" y2="155" stroke="#FBBF24" stroke-width="2" class="animate-dash"/>
+
+              <!-- Managed Nodes -->
+              <rect x="268" y="12" width="84" height="40" rx="8" fill="#1E293B" stroke="#10B981" stroke-width="1.5"/>
+              <text x="310" y="36" text-anchor="middle" fill="#34D399" font-size="9.5" font-weight="bold">Linux / Win VMs</text>
+
+              <rect x="268" y="75" width="84" height="40" rx="8" fill="#1E293B" stroke="#38BDF8" stroke-width="1.5"/>
+              <text x="310" y="99" text-anchor="middle" fill="#38BDF8" font-size="9.5" font-weight="bold">AWS/Azure/GCP</text>
+
+              <rect x="268" y="138" width="84" height="40" rx="8" fill="#1E293B" stroke="#F43F5E" stroke-width="1.5"/>
+              <text x="310" y="162" text-anchor="middle" fill="#FB7185" font-size="9.5" font-weight="bold">Huawei &amp; Cisco</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- 8-Stage Interactive Stepper & Detail View -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Stepper List (4 cols) -->
+        <div class="lg:col-span-4 space-y-2.5" id="roadmap-steps-list">
+          <!-- Populated dynamically via JS -->
+        </div>
+
+        <!-- Stage Detailed Content (8 cols) -->
+        <div class="lg:col-span-8 glass-card rounded-2xl p-6 space-y-5" id="roadmap-stage-detail">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: VISUAL SIMULATOR & ARCHITECTURE ==================== -->
+    <section id="tab-visualizer" class="tab-panel hidden space-y-6">
+      <div class="glass-card rounded-2xl p-6 space-y-6">
+        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
+          <div>
+            <h2 class="text-xl md:text-2xl font-black text-white flex items-center gap-2">
+              <span>⚡</span><span>محاكي دورة عمل Ansible والـ Idempotency (Push Execution Engine)</span>
+            </h2>
+            <p class="text-xs md:text-sm text-slate-400 mt-1">
+              شغّل خطوات تنفيذ Playbook خطوة بخطوة، وشاهد كيف يتصل الـ Control Node بالسيرفرات عبر SSH، ويجمع الـ Facts، ويحقق الـ Idempotency (الأخضر OK، الأصفر CHANGED، البرتقالي HANDLER)!
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-2" id="sim-buttons">
+            <button data-cmd="inventory" class="sim-cmd-btn px-3 py-2 rounded-xl bg-red-600 text-white text-xs font-bold transition">1. قراءة Inventory 📋</button>
+            <button data-cmd="facts" class="sim-cmd-btn px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition">2. Gathering Facts 🔍</button>
+            <button data-cmd="check" class="sim-cmd-btn px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition">3. Dry-Run (--check) 🧪</button>
+            <button data-cmd="run1" class="sim-cmd-btn px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition">4. التشغيل الأول (CHANGED) 🚀</button>
+            <button data-cmd="handlers" class="sim-cmd-btn px-3 py-2 rounded-xl bg-amber-600/30 hover:bg-amber-600/50 text-amber-300 border border-amber-500/40 text-xs font-bold transition">5. إطلاق الـ Handlers 🔔</button>
+            <button data-cmd="run2" class="sim-cmd-btn px-3 py-2 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/40 text-xs font-bold transition">6. التشغيل الثاني (Idempotent OK) ✅</button>
+          </div>
+        </div>
+
+        <!-- Visual Animated Pipeline Canvas (SVG) -->
+        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 md:p-6">
+          <div class="flex items-center justify-between mb-3">
+            <span id="sim-stage-badge" class="text-xs font-bold px-3 py-1 rounded-full bg-red-500/20 text-red-300 border border-red-500/30">
+              المرحلة الحالية: 1. قراءة الـ Inventory وملف ansible.cfg
+            </span>
+            <span class="text-xs text-slate-400">اضغط على أي عقدة في الرسم أو أزرار الأوامر بالأعلى</span>
+          </div>
+
+          <svg id="lifecycle-svg" viewBox="0 0 900 250" class="w-full h-auto">
+            <!-- Connection Lines -->
+            <line id="link-1-2" x1="175" y1="125" x2="255" y2="125" stroke="#475569" stroke-width="3"/>
+            <line id="link-2-3" x1="415" y1="125" x2="495" y2="125" stroke="#475569" stroke-width="3"/>
+            <line id="link-3-4" x1="655" y1="125" x2="725" y2="125" stroke="#475569" stroke-width="3"/>
+
+            <!-- Node 1: Control Node & Config -->
+            <g class="cursor-pointer" onclick="runSimulation('inventory')">
+              <rect x="20" y="45" width="155" height="160" rx="14" fill="#1E293B" stroke="#EF4444" stroke-width="2.5"/>
+              <text x="97" y="75" text-anchor="middle" fill="#FCA5A5" font-size="13" font-weight="bold">1. Control Node</text>
+              <rect x="35" y="90" width="125" height="26" rx="5" fill="#0F172A"/>
+              <text x="97" y="107" text-anchor="middle" fill="#38BDF8" font-size="10">ansible.cfg (Forks=5)</text>
+              <rect x="35" y="122" width="125" height="26" rx="5" fill="#0F172A"/>
+              <text x="97" y="139" text-anchor="middle" fill="#A7F3D0" font-size="10">inventory / aws_ec2.yml</text>
+              <rect x="35" y="154" width="125" height="26" rx="5" fill="#0F172A"/>
+              <text x="97" y="171" text-anchor="middle" fill="#FDE68A" font-size="10">site.yml + Vault</text>
+            </g>
+
+            <!-- Node 2: SSH Transport & Setup Facts -->
+            <g class="cursor-pointer" onclick="runSimulation('facts')">
+              <rect x="255" y="45" width="160" height="160" rx="14" fill="#1E293B" stroke="#475569" stroke-width="2" id="rect-ssh"/>
+              <text x="335" y="75" text-anchor="middle" fill="#F1F5F9" font-size="13" font-weight="bold">2. SSH &amp; Facts (setup)</text>
+              <rect x="270" y="92" width="130" height="32" rx="6" fill="#0F172A"/>
+              <text x="335" y="112" text-anchor="middle" fill="#94A3B8" font-size="10" id="txt-ssh">SSH Multiplexing</text>
+              <rect x="270" y="132" width="130" height="32" rx="6" fill="#0F172A"/>
+              <text x="335" y="152" text-anchor="middle" fill="#94A3B8" font-size="10" id="txt-facts">ansible_facts: لم تجمع</text>
+              <text x="335" y="186" text-anchor="middle" fill="#64748B" font-size="10" id="txt-python">/tmp/.ansible Python</text>
+            </g>
+
+            <!-- Node 3: Task & Module Execution -->
+            <g class="cursor-pointer" onclick="runSimulation('run1')">
+              <rect x="495" y="45" width="160" height="160" rx="14" fill="#1E293B" stroke="#475569" stroke-width="2" id="rect-tasks"/>
+              <text x="575" y="75" text-anchor="middle" fill="#F1F5F9" font-size="13" font-weight="bold">3. Modules &amp; Tasks</text>
+              <rect x="510" y="90" width="130" height="34" rx="6" fill="#0F172A"/>
+              <text x="575" y="111" text-anchor="middle" fill="#38BDF8" font-size="10" id="txt-task-state">الحالة: في الانتظار</text>
+              <rect x="510" y="132" width="130" height="34" rx="6" fill="#0F172A"/>
+              <text x="575" y="153" text-anchor="middle" fill="#FBBF24" font-size="10" id="txt-notify-state">Notify Handler: صامت</text>
+              <text x="575" y="186" text-anchor="middle" fill="#94A3B8" font-size="10" id="txt-idem-state">Idempotency Check</text>
+            </g>
+
+            <!-- Node 4: Target Managed Nodes -->
+            <g class="cursor-pointer" onclick="runSimulation('run2')">
+              <rect x="725" y="45" width="155" height="160" rx="14" fill="#1E293B" stroke="#475569" stroke-width="2" id="rect-nodes"/>
+              <text x="802" y="75" text-anchor="middle" fill="#F1F5F9" font-size="13" font-weight="bold">4. Managed Nodes</text>
+              <rect x="740" y="90" width="125" height="28" rx="6" fill="#0F172A"/>
+              <text x="802" y="108" text-anchor="middle" fill="#64748B" font-size="10" id="node-pkg">Nginx Pkg: غير مثبت</text>
+              <rect x="740" y="124" width="125" height="28" rx="6" fill="#0F172A"/>
+              <text x="802" y="142" text-anchor="middle" fill="#64748B" font-size="10" id="node-tpl">nginx.conf.j2: غير منسوخ</text>
+              <rect x="740" y="158" width="125" height="28" rx="6" fill="#0F172A"/>
+              <text x="802" y="176" text-anchor="middle" fill="#64748B" font-size="10" id="node-svc">Service: متوقف</text>
+            </g>
+          </svg>
+
+          <!-- Terminal + Explanation Split -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+            <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 space-y-2">
+              <h3 class="text-sm font-bold text-red-400" id="sim-explain-title">ماذا يحدث داخلياً في هذه الخطوة؟</h3>
+              <p class="text-xs md:text-sm text-slate-300 leading-relaxed" id="sim-explain-body">
+                يبدأ Ansible بقراءة ملف الإعدادات `ansible.cfg` لتحديد عدد العمليات المتوازية (`forks = 5` افتراضياً)، ثم يقرأ قائمة السيرفرات المستهدفة من الـ Static أو Dynamic Inventory ويجمع المتغيرات (`group_vars` و `host_vars`).
+              </p>
+              <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+                <span id="sim-tip">💡 نصيحة: فعّل `pipelining = True` في ansible.cfg لتسريع تنفيذ المهام عبر SSH بشكل ملحوظ!</span>
+              </div>
+            </div>
+
+            <!-- Simulated CLI Output -->
+            <div class="bg-black/90 border border-slate-800 rounded-xl p-4 font-mono text-xs code-ltr overflow-x-auto">
+              <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-800 text-slate-400">
+                <span>bash — ansible-playbook</span>
+                <span class="text-emerald-400">● agentless-ssh</span>
+              </div>
+              <pre id="sim-terminal-output" class="text-slate-200 whitespace-pre-wrap leading-relaxed">$ ansible-inventory -i inventory/prod.yml --graph
+@all:
+  |--@webservers:
+  |  |--web-01.prod.local
+  |  |--web-02.prod.local</pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interactive Variable Precedence & Chart -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Interactive Variable Precedence Explorer -->
+          <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="text-base font-black text-white">👑 هرم أولويات المتغيرات (Ansible Variable Precedence)</h3>
+              <span class="text-xs px-2.5 py-1 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30">تفاعلي: اضغط على أي طبقة</span>
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              من أشهر أسئلة المقابلات: إذا عرّفت نفس المتغير `http_port` في 5 أماكن مختلفة، أي قيمة ستفوز؟ اضغط على الطبقات من الأقوى (الأعلى) إلى الأضعف (الأسفل):
+            </p>
+            <div class="space-y-1.5" id="precedence-pyramid">
+              <button onclick="inspectPrecedence(0)" class="w-full p-2.5 rounded-xl bg-gradient-to-r from-red-600/80 to-rose-700/80 border border-red-400 text-white text-xs font-black flex justify-between items-center">
+                <span>1. Extra Vars (`-e "http_port=9090"`) — الفائز دائماً! 🏆</span>
+                <span class="font-mono">Priority #1 (الأقوى)</span>
+              </button>
+              <button onclick="inspectPrecedence(1)" class="w-full p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-300 text-xs font-bold flex justify-between items-center">
+                <span>2. Task Vars &amp; `set_fact` / `include_vars`</span>
+                <span class="font-mono">Priority #2</span>
+              </button>
+              <button onclick="inspectPrecedence(2)" class="w-full p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sky-300 text-xs font-bold flex justify-between items-center">
+                <span>3. Play `vars:` &amp; `vars_files:` &amp; Role `vars/main.yml`</span>
+                <span class="font-mono">Priority #3</span>
+              </button>
+              <button onclick="inspectPrecedence(3)" class="w-full p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-emerald-300 text-xs font-bold flex justify-between items-center">
+                <span>4. Inventory `host_vars/` ثم `group_vars/`</span>
+                <span class="font-mono">Priority #4</span>
+              </button>
+              <button onclick="inspectPrecedence(4)" class="w-full p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 text-xs font-bold flex justify-between items-center">
+                <span>5. Role Defaults (`roles/x/defaults/main.yml`) — الأضعف</span>
+                <span class="font-mono">Priority #5 (الأضعف)</span>
+              </button>
+            </div>
+            <div id="precedence-info" class="bg-slate-950/90 border border-red-500/30 rounded-xl p-3 text-xs text-slate-200 leading-relaxed">
+              👈 اضغط على أي مستوى في الهرم أعلاه لمعرفة متى نستخدمه في المشاريع الحقيقية ولماذا صُمم بهذه الأولوية.
+            </div>
+          </div>
+
+          <!-- Chart: Ansible vs Terraform & Mastery Breakdown -->
+          <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="text-base font-black text-white">📊 مقارنة معمارية: Ansible مقابل Terraform</h3>
+              <select id="chart-metric-select" class="bg-slate-950 border border-slate-700 text-xs rounded-lg px-2.5 py-1.5 text-slate-200">
+                <option value="comparison">التكامل بين Ansible و Terraform (نقاط القوة)</option>
+                <option value="skills">توزيع المهارات لإتقان Ansible 100%</option>
+              </select>
+            </div>
+            <div class="relative h-64 w-full">
+              <canvas id="ansibleChart"></canvas>
+            </div>
+            <p class="text-xs text-slate-400">
+              💡 القاعدة الذهبية: <strong>Terraform + Ansible ليسا متنافسين بل متكاملان!</strong> نبني البنية التحتية السحابية (VPC, VMs, DB) بـ Terraform، ثم نهيئ نظام التشغيل والبرامج بـ Ansible.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: MULTI-CLOUD LAB (AWS, AZURE, GCP, HUAWEI, TERRAFORM) ==================== -->
+    <section id="tab-multicloud" class="tab-panel hidden space-y-6">
+      <div class="glass-card rounded-2xl p-6 space-y-6">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+          <div>
+            <h2 class="text-xl md:text-2xl font-black text-white">
+              ☁️ مختبر السحابات المتعددة لـ Ansible (AWS • Azure • GCP • Huawei • التكامل مع Terraform)
+            </h2>
+            <p class="text-xs md:text-sm text-slate-400 mt-1">
+              كيف يستخدم المحترفون Ansible مع السحابات الكبرى؟ هناك طريقتان رئيسيتان: <strong>1) Dynamic Inventory Plugins</strong> (اكتشاف السيرفرات تلقائياً بالـ Tags بدون كتابة IPs يدوياً)، و <strong>2) Cloud Collections Modules</strong> لإدارة موارد السحابة وأجهزة الشبكات والكوبرنيتس!
+            </p>
+          </div>
+        </div>
+
+        <!-- Cloud Provider Selector Pills -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5" id="cloud-selector">
+          <button data-cloud="aws" class="cloud-btn tab-active p-3 rounded-xl border border-slate-700 text-right transition flex flex-col justify-between">
+            <span class="text-xs text-amber-300 font-bold">Amazon</span>
+            <span class="text-sm font-black">AWS (`amazon.aws`)</span>
+          </button>
+          <button data-cloud="azure" class="cloud-btn bg-slate-900/90 hover:bg-slate-800 p-3 rounded-xl border border-slate-800 text-right transition flex flex-col justify-between">
+            <span class="text-xs text-sky-400 font-bold">Microsoft</span>
+            <span class="text-sm font-black">Azure (`azcollection`)</span>
+          </button>
+          <button data-cloud="gcp" class="cloud-btn bg-slate-900/90 hover:bg-slate-800 p-3 rounded-xl border border-slate-800 text-right transition flex flex-col justify-between">
+            <span class="text-xs text-emerald-400 font-bold">Google Cloud</span>
+            <span class="text-sm font-black">GCP (`google.cloud`)</span>
+          </button>
+          <button data-cloud="huawei" class="cloud-btn bg-slate-900/90 hover:bg-slate-800 p-3 rounded-xl border border-slate-800 text-right transition flex flex-col justify-between">
+            <span class="text-xs text-rose-400 font-bold">Huawei</span>
+            <span class="text-sm font-black">Huawei Cloud (`hwc`)</span>
+          </button>
+          <button data-cloud="tf_integration" class="cloud-btn bg-slate-900/90 hover:bg-slate-800 p-3 rounded-xl border border-slate-800 text-right transition flex flex-col justify-between">
+            <span class="text-xs text-purple-400 font-bold">HashiCorp + RedHat</span>
+            <span class="text-sm font-black">Terraform + Ansible</span>
+          </button>
+          <button data-cloud="k8s_network" class="cloud-btn bg-slate-900/90 hover:bg-slate-800 p-3 rounded-xl border border-slate-800 text-right transition flex flex-col justify-between">
+            <span class="text-xs text-cyan-400 font-bold">K8s &amp; Windows/Net</span>
+            <span class="text-sm font-black">K8s / Cisco / WinRM</span>
+          </button>
+        </div>
+
+        <!-- Scenario Sub-Tabs -->
+        <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+          <div class="flex flex-wrap gap-2" id="scenario-selector">
+            <button data-scene="dyn_inventory" class="scene-btn bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition">
+              1. تثبيت الـ Collection + الـ Dynamic Inventory التلقائي 📡
+            </button>
+            <button data-scene="cloud_provisioning" class="scene-btn bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-bold transition">
+              2. Playbook إدارة موارد السحابة (VMs, Networks, Storage) ☁️
+            </button>
+            <button data-scene="day2_ops" class="scene-btn bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-bold transition">
+              3. أتمتة ما بعد الإنشاء (Day-2 Config, Hardening &amp; Agentless) 🛡️
+            </button>
+          </div>
+          <button id="copy-cloud-code" class="px-3 py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-xs font-bold transition flex items-center gap-1.5">
+            <span>📋</span><span>نسخ الكود</span>
+          </button>
+        </div>
+
+        <!-- Cloud Details + Code Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <!-- Explanation & Specifics (5 cols) -->
+          <div class="lg:col-span-5 bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-4" id="cloud-info-panel">
+            <!-- Populated by JS -->
+          </div>
+
+          <!-- YAML Code Viewer (7 cols) -->
+          <div class="lg:col-span-7 bg-slate-950 border border-slate-800 rounded-2xl p-5 flex flex-col">
+            <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
+              <span id="cloud-code-filename" class="text-xs font-mono text-red-400 font-bold">aws_ec2.yml</span>
+              <span class="text-xs text-slate-400">Ansible FQCN YAML Production Code</span>
+            </div>
+            <pre id="cloud-code-display" class="code-ltr text-xs md:text-sm text-slate-100 overflow-x-auto leading-relaxed flex-1"></pre>
+          </div>
+        </div>
+
+        <!-- Unified Multi-Cloud Collections & Inventory Reference Table -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-3 overflow-x-auto">
+          <h3 class="text-base font-black text-white">🔄 جدول المقارنة المرجعي لمجموعات السحابات (Ansible Galaxy Collections &amp; Dynamic Inventory)</h3>
+          <table class="w-full text-right text-xs md:text-sm border-collapse">
+            <thead>
+              <tr class="border-b border-slate-700 text-red-400 bg-slate-950/60">
+                <th class="p-3">الميزة / المهمة</th>
+                <th class="p-3">AWS</th>
+                <th class="p-3">Azure</th>
+                <th class="p-3">GCP</th>
+                <th class="p-3">Huawei Cloud</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800/80 font-mono text-xs">
+              <tr class="hover:bg-slate-800/40">
+                <td class="p-3 font-sans font-bold text-slate-200">اسم الـ Collection الرسمي</td>
+                <td class="p-3 text-amber-300">amazon.aws</td>
+                <td class="p-3 text-sky-300">azure.azcollection</td>
+                <td class="p-3 text-emerald-300">google.cloud</td>
+                <td class="p-3 text-rose-300">hwce.hwc / community</td>
+              </tr>
+              <tr class="hover:bg-slate-800/40">
+                <td class="p-3 font-sans font-bold text-slate-200">Dynamic Inventory Plugin</td>
+                <td class="p-3 text-amber-300">amazon.aws.aws_ec2</td>
+                <td class="p-3 text-sky-300">azure.azcollection.azure_rm</td>
+                <td class="p-3 text-emerald-300">google.cloud.gcp_compute</td>
+                <td class="p-3 text-rose-300">huaweicloud_ecs / openstack</td>
+              </tr>
+              <tr class="hover:bg-slate-800/40">
+                <td class="p-3 font-sans font-bold text-slate-200">مكتبة Python المطلوبة</td>
+                <td class="p-3 text-amber-300">boto3 &amp; botocore</td>
+                <td class="p-3 text-sky-300">azure-identity &amp; mgmt</td>
+                <td class="p-3 text-emerald-300">google-auth &amp; requests</td>
+                <td class="p-3 text-rose-300">huaweicloudsdkcore / ecs</td>
+              </tr>
+              <tr class="hover:bg-slate-800/40">
+                <td class="p-3 font-sans font-bold text-slate-200">إدارة الخادم الافتراضي VM</td>
+                <td class="p-3 text-amber-300">amazon.aws.ec2_instance</td>
+                <td class="p-3 text-sky-300">azure_rm_virtualmachine</td>
+                <td class="p-3 text-emerald-300">gcp_compute_instance</td>
+                <td class="p-3 text-rose-300">hwc_ecs_instance</td>
+              </tr>
+              <tr class="hover:bg-slate-800/40">
+                <td class="p-3 font-sans font-bold text-slate-200">إدارة الشبكة الافتراضية</td>
+                <td class="p-3 text-amber-300">amazon.aws.ec2_vpc_net</td>
+                <td class="p-3 text-sky-300">azure_rm_virtualnetwork</td>
+                <td class="p-3 text-emerald-300">gcp_compute_network</td>
+                <td class="p-3 text-rose-300">hwc_vpc</td>
+              </tr>
+              <tr class="hover:bg-slate-800/40">
+                <td class="p-3 font-sans font-bold text-slate-200">الاتصال بدون فتح SSH عام</td>
+                <td class="p-3 text-amber-300">aws_ssm connection</td>
+                <td class="p-3 text-sky-300">Bastion / IAP Tunnel</td>
+                <td class="p-3 text-emerald-300">GCP IAP SSH Tunnel</td>
+                <td class="p-3 text-rose-300">Cloud Bastion Host (CBH)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 4: COMPREHENSIVE GLOSSARY & JINJA2 CHEATSHEET ==================== -->
+    <section id="tab-glossary" class="tab-panel hidden space-y-6">
+      <div class="glass-card rounded-2xl p-6 space-y-5">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-xl md:text-2xl font-black text-white">📚 القاموس المعماري الشامل لمصطلحات Ansible و Jinja2 و Modules</h2>
+            <p class="text-xs md:text-sm text-slate-400 mt-1">
+              كل مصطلح ومفهوم وموديول في Ansible مشروح بالتفصيل مع أمثلة كود YAML مباشرة قابلة للبحث والفلترة.
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <input id="glossary-search" type="text" placeholder="ابحث عن مصطلح (مثل: Idempotency, Handler, Vault, Jinja2, delegate_to)..." class="bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-xs md:text-sm text-white focus:outline-none focus:border-red-500 w-64 md:w-80"/>
+            <select id="glossary-cat" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs md:text-sm text-slate-200">
+              <option value="all">جميع التصنيفات (24 مفهوم)</option>
+              <option value="core">المفاهيم الأساسية والمعمارية</option>
+              <option value="playbook">عناصر الـ Playbook والتحكم</option>
+              <option value="roles">الـ Roles والـ Collections و Jinja2</option>
+              <option value="advanced">الأمان والأداء والـ Enterprise</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="glossary-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 5: INTERVIEW BANK & SIMULATOR ==================== -->
+    <section id="tab-interview" class="tab-panel hidden space-y-6">
+      <div class="glass-card rounded-2xl p-6 space-y-6">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+          <div>
+            <h2 class="text-xl md:text-2xl font-black text-white">🎯 بنك أسئلة مقابلات العمل الاحترافية لـ Ansible + محاكي الاختبار</h2>
+            <p class="text-xs md:text-sm text-slate-400 mt-1">
+              أقوى الأسئلة التي تُطرح في مقابلات DevOps / SRE / Linux &amp; Cloud Automation Engineer من مستوى Junior إلى Senior Architect مع الإجابات النموذجية.
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button data-level="all" class="iq-filter-btn bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold">الكل</button>
+            <button data-level="junior" class="iq-filter-btn bg-slate-800 text-emerald-300 px-3 py-1.5 rounded-lg text-xs font-bold">مبتدئ (Junior)</button>
+            <button data-level="mid" class="iq-filter-btn bg-slate-800 text-sky-300 px-3 py-1.5 rounded-lg text-xs font-bold">متوسط (Mid-Level)</button>
+            <button data-level="senior" class="iq-filter-btn bg-slate-800 text-amber-300 px-3 py-1.5 rounded-lg text-xs font-bold">خبير (Senior &amp; Scenarios)</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <!-- Questions Accordion List (7 cols) -->
+          <div class="lg:col-span-7 space-y-3" id="interview-questions-list">
+            <!-- Populated via JS -->
+          </div>
+
+          <!-- Interactive Quiz Simulator (5 cols) -->
+          <div class="lg:col-span-5 bg-slate-900/90 border border-red-500/30 rounded-2xl p-5 space-y-4 h-fit sticky top-28">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-red-500/20 text-red-300 border border-red-500/30">
+                🏆 اختبار الجاهزية لمقابلة Ansible
+              </span>
+              <span id="quiz-score-badge" class="text-xs font-bold text-emerald-400">النتيجة: 0 / 6</span>
+            </div>
+            <div id="quiz-container" class="space-y-4">
+              <!-- Populated via JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // ==================== DATA: 8-STAGE ROADMAP FOR ANSIBLE ====================
+    const roadmapData = [
+      {
+        id: "stage1",
+        step: "المرحلة 1",
+        title: "فلسفة ومعمارية Ansible (Agentless, Push Model, Idempotency)",
+        level: "Zero / التأسيس المعماري",
+        summary: "فهم كيف يعمل Ansible بدون تثبيت عميل (Agentless)، ومعنى الـ Idempotency، والفرق بينه وبين Terraform.",
+        points: [
+          "معمارية Agentless (بدون عميل): بخلاف أدوات قديمة مثل Puppet أو Chef، لا يتطلب Ansible تثبيت أي برنامج خلفي (Daemon/Agent) على السيرفرات المستهدفة؛ بل يتصل مباشرة عبر بروتوكول SSH (للينكس) أو WinRM/PSRP (للويندوز) أو HTTPS API (للسحابات وأجهزة الشبكات).",
+          "مكونات المعمارية: 1) Control Node (الجهاز الذي تشغل منه الأوامر، ويجب أن يكون Linux/macOS أو WSL)، و 2) Managed Nodes (السيرفرات والأجهزة المستهدفة وتحتاج فقط لوجود Python أو PowerShell).",
+          "مبدأ Idempotency (الحيادية التكرارية - أهم مصطلح في المقابلات!): يعني أنك لو شغلت نفس الـ Playbook مرة واحدة أو 100 مرة، ستحصل على نفس النتيجة النهائية تماماً، ولن يقوم Ansible بإعادة تنفيذ خطوة مطبقة بالفعل (يعطيك اللون الأخضر ok بدلاً من الأصفر changed).",
+          "Push vs Pull Model: افتراضياً يعمل Ansible بنظام الدفع (Push) من الـ Control Node، ولكنه يوفر أيضاً أداة `ansible-pull` حيث تسحب السيرفرات الإعدادات من Git تلقائياً عند الإقلاع."
+        ],
+        commands: [
+          { cmd: "ansible --version", desc: "عرض إصدار ansible-core ومسار ملف الإعدادات الفعال ومسار Collections." },
+          { cmd: "ansible-config dump --only-changed", desc: "عرض الإعدادات التي تم تعديلها عن القيم الافتراضية فقط." }
+        ],
+        codeTitle: "ansible.cfg — ملف الإعدادات الاحترافي لتسريع الأداء وضبط الاتصال",
+        code: `[defaults]
+inventory           = ./inventory/hosts.yml
+remote_user         = ubuntu
+host_key_checking   = False
+forks               = 20          # تنفيذ المهام على 20 سيرفر بالتوازي بدلاً من 5
+gathering           = smart       # جمع معلومات النظام بذكاء
+retry_files_enabled = False
+callbacks_enabled   = timer, profile_tasks
+
+[privilege_escalation]
+become              = True        # تفعيل صلاحيات الجذر (sudo)
+become_method       = sudo
+become_user         = root
+
+[ssh_connection]
+pipelining          = True        # تسريع هائل عبر تقليل جلسات SSH لكل مهمة
+ssh_args            = -o ControlMaster=auto -o ControlPersist=60s`
+      },
+      {
+        id: "stage2",
+        step: "المرحلة 2",
+        title: "إتقان الـ Inventory (الثابت والديناميكي) والأوامر الفورية (Ad-Hoc)",
+        level: "Beginner / الأساس العملي",
+        summary: "تنظيم السيرفرات في مجموعات متداخلة، إدارة متغيرات المجموعات، وتنفيذ الأوامر السريعة.",
+        points: [
+          "ما هو الـ Inventory؟ هو الملف الذي يعرف السيرفرات المستهدفة ويصنفها في مجموعات (مثل `[webservers]`, `[dbservers]`). يُكتب بصيغة INI أو YAML (والـ YAML هو الأفضل للمشاريع الكبيرة).",
+          "المجموعات الافتراضية: هناك مجموعتان موجودتان دائماً وهما `all` (تشمل كل السيرفرات) و `ungrouped` (السيرفرات التي لا تنتمي لأي مجموعة).",
+          "فصل المتغيرات بنظافة: بدلاً من تكديس المتغيرات داخل ملف الـ Inventory، ننشئ مجلد `group_vars/` (مثال: `group_vars/webservers.yml`) ومجلد `host_vars/` (مثال: `host_vars/web-01.yml`).",
+          "الأوامر الفورية (Ad-Hoc Commands): أوامر من سطر واحد تُستخدم للفحص السريع أو الطوارئ (مثل فحص الاتصال بـ `ping` أو معرفة مساحة القرص أو إعادة تشغيل خدمة) دون كتابة Playbook."
+        ],
+        commands: [
+          { cmd: "ansible all -m ansible.builtin.ping", desc: "اختبار اتصال SSH ووجود Python على جميع السيرفرات." },
+          { cmd: "ansible webservers -m ansible.builtin.apt -a \"name=nginx state=present\" --become", desc: "تثبيت Nginx فوراً على مجموعة الويب بأمر Ad-Hoc." },
+          { cmd: "ansible-inventory -i hosts.yml --list", desc: "عرض هيكل السيرفرات والمتغيرات المدمجة بصيغة JSON." }
+        ],
+        codeTitle: "inventory/hosts.yml — تقسيم احترافي للسيرفرات بصيغة YAML",
+        code: `all:
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+    ntp_server: time.cloudflare.com
+
+  children:
+    webservers:
+      hosts:
+        web-01.prod.internal:
+          ansible_host: 10.10.1.11
+        web-02.prod.internal:
+          ansible_host: 10.10.1.12
+      vars:
+        http_port: 8080
+
+    databases:
+      hosts:
+        db-master.prod.internal:
+          ansible_host: 10.10.2.50
+          pg_role: primary`
+      },
+      {
+        id: "stage3",
+        step: "المرحلة 3",
+        title: "كتابة الـ Playbooks، الـ Modules (FQCN)، والـ Handlers",
+        level: "Intermediate / بناء الأتمتة",
+        summary: "بنية ملفات YAML، استخدام الأسماء المؤهلة بالكامل FQCN، وربط التغييرات بالـ Handlers.",
+        points: [
+          "الفرق بين Playbook و Play و Task و Module: الـ Playbook هو ملف YAML يحتوي على قائمة من الـ Plays؛ كل Play يربط مجموعة سيرفرات (`hosts`) بمجموعة مهام (`tasks`)؛ وكل Task يستدعي `Module` واحد (مثل `apt` أو `copy` أو `systemd`).",
+          "الاسم المؤهل بالكامل (FQCN - Fully Qualified Collection Name): في Ansible الحديث، نكتب `ansible.builtin.apt` بدلاً من `apt` المختصرة لمنع تضارب الأسماء بين الـ Collections المختلفة.",
+          "تحذير مهم جداً للمقابلات (`command` vs `shell` vs Native Modules): موديولات `command` و `shell` و `raw` ليست Idempotent افتراضياً! استخدم دائماً الموديول المخصص (`user`, `file`, `systemd`)، وإذا اضطررت لاستخدام `shell` أضف معامل `creates:` أو `changed_when:`.",
+          "الـ Handlers والـ Notify: الـ Handler هو مهمة خاصة (مثل إعادة تشغيل Nginx) لا تعمل إلا إذا حدث تغيير فعلي (`changed`) في مهمة استدعت `notify:`، وتُنفذ مرة واحدة فقط في نهاية الـ Play حتى لو تم استدعاؤها 10 مرات!"
+        ],
+        commands: [
+          { cmd: "ansible-playbook site.yml --syntax-check", desc: "فحص صحة كود YAML نحوياً قبل التشغيل." },
+          { cmd: "ansible-playbook site.yml --check --diff", desc: "التشغيل التجريبي (Dry-Run) مع إظهار الفروق النصية في الملفات دون تطبيقها!" },
+          { cmd: "ansible-doc ansible.builtin.systemd", desc: "عرض دليل الاستخدام والأمثلة لأي موديول مباشرة من الطرفية." }
+        ],
+        codeTitle: "webserver_playbook.yml — Playbook متكامل يستخدم FQCN و Handlers",
+        code: `---
+- name: Configure and Harden Production Web Servers
+  hosts: webservers
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Ensure Nginx package is installed
+      ansible.builtin.apt:
+        name: nginx
+        state: present
+        update_cache: true
+
+    - name: Deploy custom Nginx configuration file
+      ansible.builtin.template:
+        src: templates/nginx.conf.j2
+        dest: /etc/nginx/nginx.conf
+        owner: root
+        group: root
+        mode: '0644'
+        validate: 'nginx -t -c %s' # يتحقق من صحة الملف قبل اعتماده!
+      notify: Reload Nginx Service
+
+    - name: Ensure Nginx is running and enabled on boot
+      ansible.builtin.systemd:
+        name: nginx
+        state: started
+        enabled: true
+
+  handlers:
+    - name: Reload Nginx Service
+      ansible.builtin.systemd:
+        name: nginx
+        state: reloaded`
+      },
+      {
+        id: "stage4",
+        step: "المرحلة 4",
+        title: "المتغيرات، الـ Facts، والشروط والحلقات ومعالجة الأخطاء",
+        level: "Intermediate+ / منطق البرمجة",
+        summary: "استخدام ansible_facts، الشروط when، الحلقات loop، والتعامل الاحترافي مع الأخطاء بـ block/rescue/always.",
+        points: [
+          "جمع الحقائق (Gathering Facts): قبل تنفيذ المهام، يشغل Ansible تلقائياً موديول `setup` ليجمع كل تفاصيل السيرفر (نظام التشغيل، الرام، المعالج، عناوين IP، الأقراص) ويحفظها في متغير `ansible_facts`.",
+          "التسجيل والفحص (`register` & `when`): نحفظ مخرجات أي مهمة في متغير عبر `register: result`، ثم نبني عليه شروطاً عبر `when: ansible_facts['os_family'] == 'Debian'`.",
+          "حلقات التكرار (`loop`): استبدلت كلمة `loop:` الحديثة معظم استخدامات `with_items:` القديمة، وتتيح تكرار المهمة على قائمة نصوص أو قواميس (Dictionaries) عبر المتغير `{{ item }}`.",
+          "معالجة الأخطاء الاحترافية (`block` / `rescue` / `always`): تشبه `try / catch / finally` في لغات البرمجة! نضع المهام الحرجة في `block:`، وإذا فشلت أي مهمة ينتقل التنفيذ تلقائياً إلى `rescue:` (لعمل Rollback أو إرسال تنبيه)، بينما تعمل `always:` في جميع الأحوال."
+        ],
+        commands: [
+          { cmd: "ansible web-01 -m ansible.builtin.setup -a \"filter=ansible_distribution*\"", desc: "استعراض حقائق نظام التشغيل لسيرفر معين." },
+          { cmd: "ansible-playbook site.yml --tags \"deploy,config\" --skip-tags \"db\"", desc: "تشغيل مهام محددة فقط موسومة بـ Tags معينة." }
+        ],
+        codeTitle: "logic_and_error_handling.yml — الشروط، الحلقات، ومعالجة الأخطاء بـ block/rescue",
+        code: `---
+- name: Advanced Logic & Resilient Deployment
+  hosts: webservers
+  become: true
+
+  tasks:
+    - name: Create multiple system users with specific roles
+      ansible.builtin.user:
+        name: "{{ item.username }}"
+        groups: "{{ item.group }}"
+        state: present
+      loop:
+        - { username: 'devops_admin', group: 'sudo' }
+        - { username: 'app_runner',   group: 'www-data' }
+      when: ansible_facts['os_family'] == "Debian"
+
+    - name: Safe Application Deployment with Automatic Rollback
+      block:
+        - name: Pull new release artifact
+          ansible.builtin.get_url:
+            url: "https://releases.example.com/app-v2.tar.gz"
+            dest: "/opt/app/app-v2.tar.gz"
+
+        - name: Verify application health endpoint
+          ansible.builtin.uri:
+            url: "http://localhost:8080/healthz"
+            status_code: 200
+      rescue:
+        - name: Rollback to previous stable version on failure!
+          ansible.builtin.command: /opt/app/rollback.sh
+          changed_when: true
+      always:
+        - name: Clean up temporary build cache
+          ansible.builtin.file:
+            path: /tmp/deploy_cache
+            state: absent`
+      },
+      {
+        id: "stage5",
+        step: "المرحلة 5",
+        title: "قوالب Jinja2 الديناميكية والفلاتر المتقدمة (Templates & Filters)",
+        level: "Advanced / القوالب الذكية",
+        summary: "توليد ملفات الإعدادات المعقدة (Nginx, HAProxy, Prometheus) ديناميكياً باستخدام Jinja2.",
+        points: [
+          "لماذا نستخدم `template` بدلاً من `copy`؟ موديول `copy` ينسخ الملف كما هو جامداً، بينما `template` يمرر ملف `.j2` عبر محرك القوالب **Jinja2** على الـ Control Node ليعوض المتغيرات والحلقات والشروط قبل إرساله للسيرفر!",
+          "رموز Jinja2 الثلاثة: 1) `{{ variable }}` لطباعة قيمة متغير، 2) `{% if ... %}` أو `{% for ... %}` للشروط والحلقات، و 3) `{# comment #}` للتعليقات التي لا تظهر في الملف النهائي.",
+          "الفلاتر القوية (Jinja2 Filters): تُستخدم لتحويل البيانات بعلامة الأنبوب `|` مثل: `{{ my_var | default('80') }}`، أو `{{ list | join(',') }}`، أو `{{ pass | password_hash('sha512') }}`، أو `{{ data | to_nice_yaml }}`، أو `{{ dict_var | dict2items }}`.",
+          "الوصول لحقائق السيرفرات الأخرى (`hostvars`): يمكنك داخل قالب سيرفر Load Balancer عمل حلقة `{% for host in groups['webservers'] %}` وجلب الـ IP الداخلي لكل سيرفر ويب تلقائياً!"
+        ],
+        commands: [
+          { cmd: "ansible all -m ansible.builtin.debug -a \"msg={{ 'secret123' | hash('sha256') }}\"", desc: "اختبار فلاتر Jinja2 مباشرة من سطر الأوامر." }
+        ],
+        codeTitle: "templates/haproxy.cfg.j2 — قالب يولّد إعدادات Load Balancer تلقائياً",
+        code: `# {{ ansible_managed }}
+# Generated automatically for node: {{ inventory_hostname }}
+
+global
+    maxconn {{ haproxy_maxconn | default(4096) }}
+
+frontend http_front
+    bind *:{{ frontend_port | default(80) }}
+    default_backend web_backends
+
+backend web_backends
+    balance roundrobin
+{% for host in groups['webservers'] %}
+    server {{ host }} {{ hostvars[host]['ansible_facts']['default_ipv4']['address'] }}:8080 check
+{% endfor %}`
+      },
+      {
+        id: "stage6",
+        step: "المرحلة 6",
+        title: "تنظيم المشاريع الكبرى: الـ Roles والـ Ansible Galaxy Collections",
+        level: "Architect / الهيكل المؤسسي",
+        summary: "تحويل الـ Playbooks الطويلة إلى Roles معيارية قابلة لإعادة الاستخدام وإدارة الـ Collections.",
+        points: [
+          "ما هو الـ Role؟ هو هيكل مجلدات قياسي وموحد يقسم الأتمتة إلى أجزاء منطقية مستقلة (`tasks/`, `handlers/`, `templates/`, `files/`, `vars/`, `defaults/`, `meta/`) بحيث يمكن مشاركته واستخدامه في عشرات المشاريع.",
+          "الفرق المهم بين `defaults/main.yml` و `vars/main.yml` داخل الـ Role: المتغيرات في `defaults/` لها أضعف أولوية في Ansible (يسهل تعديلها عند استدعاء الـ Role)، بينما المتغيرات في `vars/` لها أولوية عالية جداً يصعب الكتابة فوقها!",
+          "ما هي الـ Ansible Collections؟ هي صيغة التغليف والتوزيع الحديثة التي تجمع داخلها Modules + Roles + Plugins (مثل `amazon.aws` أو `community.general`).",
+          "ملف `requirements.yml`: يُستخدم لتثبيت الـ Roles والـ Collections بإصدارات محددة في بيئات العمل و CI/CD عبر أمر واحد."
+        ],
+        commands: [
+          { cmd: "ansible-galaxy role init roles/nginx_hardened", desc: "إنشاء الهيكل القياسي الكامل لمجلدات الـ Role تلقائياً." },
+          { cmd: "ansible-galaxy collection install -r requirements.yml", desc: "تثبيت جميع الـ Collections والـ Roles المطلوبة للمشروع." }
+        ],
+        codeTitle: "role_structure_and_requirements.yml — هيكل الـ Role وملف المتطلبات",
+        code: `# 1. هيكل مجلدات الـ Role القياسي:
+roles/nginx_hardened/
+├── defaults/main.yml   # المتغيرات الافتراضية القابلة للتخصيص (الأضعف أولوية)
+├── vars/main.yml       # متغيرات داخلية ثابتة للـ Role (أولوية عالية)
+├── tasks/main.yml      # المهام الرئيسية للـ Role
+├── handlers/main.yml   # الـ Handlers الخاصة بالـ Role
+├── templates/          # قوالب Jinja2 (.j2)
+├── files/              # الملفات الثابتة
+└── meta/main.yml       # معلومات الـ Role واعتمادياته (Role Dependencies)
+
+# ---------------------------------------------------------
+# 2. ملف requirements.yml لتثبيت مجموعات السحابات:
+---
+collections:
+  - name: amazon.aws
+    version: ">=8.0.0"
+  - name: azure.azcollection
+    version: ">=2.4.0"
+  - name: google.cloud
+    version: ">=1.3.0"
+  - name: kubernetes.core
+    version: ">=3.0.0"`
+      },
+      {
+        id: "stage7",
+        step: "المرحلة 7",
+        title: "تشفير الأسرار بـ Ansible Vault والتنفيذ المتقدم (Rolling Updates & Async)",
+        level: "Security & Scale / التوسع والأمان",
+        summary: "تشفير الملفات والمتغيرات بـ AES-256، التحديث المتدرج بدون توقف (serial)، والمهام غير المتزامنة.",
+        points: [
+          "ما هو Ansible Vault؟ أداة مدمجة لتشفير كلمات المرور، مفاتيح الـ API، والشهادات الخاصة باستخدام تشفير AES-256 القوي بحيث يمكنك رفع ملفاتك بأمان تام داخل Git!",
+          "طريقتان للتشفير: تشفير ملف كامل (`ansible-vault encrypt secrets.yml`) أو تشفير قيمة متغير واحد فقط داخل ملف عادي (`ansible-vault encrypt_string`)، مع دعم عدة مفاتيح (`--vault-id dev@prompt`, `prod@file`).",
+          "التحديث المتدرج بدون انقطاع (Zero-Downtime Rolling Updates): باستخدام `serial: 2` أو `serial: \"25%\"` مع `max_fail_percentage` ليقوم Ansible بتحديث السيرفرات على دفعات بدل إسقاطها جميعاً في لحظة واحدة!",
+          "التفويض والتحكم (`delegate_to` & `run_once`): لتنفيذ مهمة معينة على جهاز آخر (مثل سحب السيرفر من الـ Load Balancer أو التسجيل في خادم المراقبة) أثناء تحديث السيرفر الحالي، واستخدام `async` و `poll` للمهام الطويلة جداً."
+        ],
+        commands: [
+          { cmd: "ansible-vault create group_vars/prod/vault.yml", desc: "إنشاء ملف مشفر جديد لحفظ أسرار بيئة الإنتاج." },
+          { cmd: "ansible-vault edit group_vars/prod/vault.yml", desc: "تحرير ملف مشفر مباشرة دون فك تشفيره على القرص." },
+          { cmd: "ansible-playbook site.yml --vault-password-file ~/.vault_pass", desc: "تشغيل الـ Playbook مع فك تشفير الأسرار تلقائياً." }
+        ],
+        codeTitle: "rolling_zero_downtime.yml — تحديث متدرج للسيرفرات بدون انقطاع الخدمة",
+        code: `---
+- name: Zero-Downtime Rolling Update across Web Cluster
+  hosts: webservers
+  become: true
+  serial: "30%"                # تحديث 30% فقط من السيرفرات في كل دفعة!
+  max_fail_percentage: 10      # إيقاف التحديث فوراً إذا فشل أكثر من 10%
+
+  pre_tasks:
+    - name: Drain server from Load Balancer before update
+      ansible.builtin.uri:
+        url: "http://lb.internal/api/disable/{{ inventory_hostname }}"
+        method: POST
+      delegate_to: localhost   # ينفذ الطلب من الـ Control Node!
+
+  tasks:
+    - name: Run long database migration asynchronously
+      ansible.builtin.command: /opt/app/migrate_db.sh
+      async: 600               # السماح بـ 10 دقائق كحد أقصى
+      poll: 10                 # فحص الحالة كل 10 ثوانٍ
+      run_once: true           # يُنفذ مرة واحدة فقط وليس من كل سيرفر!
+
+  post_tasks:
+    - name: Re-enable server in Load Balancer after health check
+      ansible.builtin.uri:
+        url: "http://lb.internal/api/enable/{{ inventory_hostname }}"
+        method: POST
+      delegate_to: localhost`
+      },
+      {
+        id: "stage8",
+        step: "المرحلة 8",
+        title: "الاختبار (Lint & Molecule)، بيئات التنفيذ (EE)، و AAP / AWX و Event-Driven",
+        level: "100% Mastery / خبير ومعماري",
+        summary: "الفحص القياسي بـ ansible-lint، اختبار الـ Roles بـ Molecule، الحاويات (Execution Environments)، و AWX/AAP.",
+        points: [
+          "الفحص والجودة (`ansible-lint`): أداة تفحص كود YAML لاكتشاف الأخطاء الشائعة، مثل نسيان استخدام FQCN، أو استخدام `shell` بدون `changed_when`، أو ترك صلاحيات ملفات غير محددة.",
+          "الاختبار الآلي للـ Roles (`Molecule`): إطار عمل ينشئ حاويات Docker/Podman أو VMs مؤقتة، ويطبق الـ Role عليها، ويتأكد من الـ Idempotency (أن التشغيل الثاني يعطي `changed=0`)، ثم يدمر الحاويات تلقائياً!",
+          "بيئات التنفيذ الحديثة (Execution Environments - EE & `ansible-navigator`): بدلاً من مشاكل تعارض مكتبات Python على أجهزة المهندسين، يتم بناء صورة حاوية (Container Image) عبر `ansible-builder` تحتوي على `ansible-core` والـ Collections ومكتبات Python (مثل boto3 و SDKs) وتشغيلها بـ `ansible-navigator`.",
+          "الإدارة المؤسسية (AWX / Red Hat Ansible Automation Platform - AAP) و Event-Driven Ansible (EDA): واجهة ويب و API توفر صلاحيات RBAC، وسجل تدقيق مركزي، وجدولة مهام، واستجابة تلقائية للأحداث والتنبيهات في الوقت الفعلي (Auto-Remediation)."
+        ],
+        commands: [
+          { cmd: "ansible-lint site.yml", desc: "فحص جودة الكود والالتزام بأفضل ممارسات الإنتاج." },
+          { cmd: "molecule test", desc: "تشغيل دورة الاختبار الكاملة للـ Role (Create -> Converge -> Idempotence -> Verify -> Destroy)." },
+          { cmd: "ansible-navigator run site.yml --eei quay.io/ansible/creator-ee", desc: "تشغيل الـ Playbook داخل Execution Environment معزولة." }
+        ],
+        codeTitle: "execution_environment.yml — بناء حاوية بيئة تنفيذ قياسية بـ ansible-builder",
+        code: `# execution-environment.yml (Ansible Builder v3)
+---
+version: 3
+
+images:
+  base_image:
+    name: quay.io/fedora/fedora:40
+
+dependencies:
+  ansible_core:
+    package_pip: ansible-core>=2.16.0
+  ansible_runner:
+    package_pip: ansible-runner
+  galaxy: requirements.yml     # يثبت جميع الـ Collections (AWS, Azure, GCP, Huawei)
+  python:
+    - boto3                    # مطلوب لـ AWS
+    - google-auth              # مطلوب لـ GCP
+    - huaweicloudsdkecs        # مطلوب لـ Huawei Cloud
+    - pywinrm                  # مطلوب لـ Windows Servers`
+      }
+    ];
+
+    // ==================== DATA: MULTI-CLOUD LAB FOR ANSIBLE ====================
+    const multiCloudData = {
+      aws: {
+        name: "Amazon Web Services (`amazon.aws` & `community.aws`)",
+        collectionName: "amazon.aws",
+        authMethods: [
+          "أفضل طريقة: IAM Instance Profile أو متغيرات البيئة `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION` أو `AWS_PROFILE`.",
+          "يدعم الـ Dynamic Inventory عبر الإضافة الرسمية `amazon.aws.aws_ec2` التي تجلب السيرفرات تلقائياً وتصنفها في مجموعات حسب الـ Tags أو الـ Regions أو الـ VPC!",
+          "ميزة ذهبية للأمان: يمكنك الاتصال بسيرفرات AWS الخاصة (Private Subnets) بدون فتح منفذ SSH 22 إطلاقاً عبر إضافة الاتصال `amazon.aws.aws_ssm` (AWS Systems Manager Session Manager)!"
+        ],
+        reqLibs: "تثبيت المجموعة عبر `ansible-galaxy collection install amazon.aws` وتثبيت مكتبة بايثون `pip install boto3 botocore`.",
+        keyGotchas: "يجب أن ينتهي اسم ملف الـ Dynamic Inventory لـ AWS بـ `aws_ec2.yml` أو `aws_ec2.yaml` لكي يتعرف عليه الـ Plugin تلقائياً!",
+        scenes: {
+          dyn_inventory: {
+            filename: "inventory/prod_aws_ec2.yml",
+            code: `# ملف Dynamic Inventory يجلب سيرفرات EC2 تلقائياً من AWS!
+# التشغيل: ansible-inventory -i inventory/prod_aws_ec2.yml --graph
+---
+plugin: amazon.aws.aws_ec2
+regions:
+  - me-central-1
+  - eu-central-1
+
+# جلب السيرفرات التي في حالة تشغيل فقط
+filters:
+  instance-state-name: running
+
+# إنشاء مجموعات Ansible تلقائياً بناءً على الـ AWS Tags والـ AZ!
+keyed_groups:
+  - key: tags.Environment
+    prefix: env
+    separator: "_"
+  - key: tags.Role
+    prefix: role
+    separator: "_"
+  - key: placement.availability_zone
+    prefix: az
+
+# الاتصال بالسيرفر عبر عنوان الـ Private IP الداخلي
+compose:
+  ansible_host: private_ip_address`
+          },
+          cloud_provisioning: {
+            filename: "aws_provision_infra.yml",
+            code: `---
+- name: Provision AWS Cloud Resources using Ansible Collection
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    aws_region: "me-central-1"
+
+  tasks:
+    - name: Create Production VPC in UAE Region
+      amazon.aws.ec2_vpc_net:
+        name: "ansible-prod-vpc"
+        cidr_block: "10.50.0.0/16"
+        region: "{{ aws_region }}"
+        tags:
+          ManagedBy: Ansible
+      register: vpc_out
+
+    - name: Create Web Security Group
+      amazon.aws.ec2_security_group:
+        name: "web-sg"
+        description: "Allow HTTPS and SSH"
+        vpc_id: "{{ vpc_out.vpc.id }}"
+        region: "{{ aws_region }}"
+        rules:
+          - proto: tcp
+            ports: [443, 22]
+            cidr_ip: 0.0.0.0/0
+      register: sg_out
+
+    - name: Launch Idempotent EC2 Web Server
+      amazon.aws.ec2_instance:
+        name: "prod-web-01"
+        instance_type: "t3.micro"
+        image_id: "ami-0c55b159cbfafe1f0"
+        region: "{{ aws_region }}"
+        security_group: "{{ sg_out.group_id }}"
+        tags:
+          Environment: prod
+          Role: web`
+          },
+          day2_ops: {
+            filename: "aws_ssm_agentless_config.yml",
+            code: `# إدارة سيرفرات AWS داخل الشبكة الخاصة بدون فتح بورت SSH 22!
+---
+- name: Configure Private EC2 Instances via AWS SSM Connection
+  hosts: role_web
+  connection: amazon.aws.aws_ssm
+  gather_facts: true
+  become: true
+
+  vars:
+    ansible_aws_ssm_bucket_name: "corp-ansible-ssm-transfer-bucket"
+    ansible_aws_ssm_region: "me-central-1"
+
+  tasks:
+    - name: Apply security updates and install Docker
+      ansible.builtin.apt:
+        name:
+          - docker.io
+          - fail2ban
+        state: present
+        update_cache: true`
+          }
+        }
+      },
+
+      azure: {
+        name: "Microsoft Azure (`azure.azcollection`)",
+        collectionName: "azure.azcollection",
+        authMethods: [
+          "الطريقة المعتمدة: Service Principal عبر متغيرات البيئة `AZURE_CLIENT_ID`, `AZURE_SECRET`, `AZURE_SUBSCRIPTION_ID`, `AZURE_TENANT`.",
+          "أو استخدام Managed Identity عند تشغيل الـ Control Node داخل Azure VM، أو تسجيل الدخول عبر `az login`.",
+          "Dynamic Inventory Plugin الرسمي هو `azure.azcollection.azure_rm` ويجمع الأجهزة الافتراضية تلقائياً حسب الـ Resource Group أو الـ Tags."
+        ],
+        reqLibs: "تثبيت المجموعة عبر `ansible-galaxy collection install azure.azcollection` ثم تثبيت متطلبات بايثون الرسمية الخاصة بها.",
+        keyGotchas: "يجب أن ينتهي اسم ملف الـ Dynamic Inventory لـ Azure بـ `.azure_rm.yml` أو `.azure_rm.yaml` ليعمل الـ Plugin!",
+        scenes: {
+          dyn_inventory: {
+            filename: "inventory/prod.azure_rm.yml",
+            code: `# ملف Dynamic Inventory لسحابة Microsoft Azure
+# التشغيل: ansible-inventory -i inventory/prod.azure_rm.yml --graph
+---
+plugin: azure.azcollection.azure_rm
+include_vm_resource_groups:
+  - rg-prod-uae-01
+
+auth_source: auto
+
+# تصنيف الـ VMs تلقائياً في مجموعات حسب الـ Tags والـ Location
+keyed_groups:
+  - prefix: tag
+    key: tags
+  - prefix: loc
+    key: location
+
+# تجاهل السيرفرات المتوقفة
+conditional_groups:
+  running_hosts: "powerstate == 'running'"`
+          },
+          cloud_provisioning: {
+            filename: "azure_provision_vm.yml",
+            code: `---
+- name: Provision Azure Infrastructure with Ansible
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    rg_name: "rg-prod-uae-01"
+    location: "uaenorth"
+
+  tasks:
+    - name: Ensure Resource Group exists
+      azure.azcollection.azure_rm_resourcegroup:
+        name: "{{ rg_name }}"
+        location: "{{ location }}"
+
+    - name: Create Virtual Network VNet
+      azure.azcollection.azure_rm_virtualnetwork:
+        resource_group: "{{ rg_name }}"
+        name: "vnet-prod"
+        address_prefixes: "10.20.0.0/16"
+
+    - name: Create Linux Virtual Machine on Azure
+      azure.azcollection.azure_rm_virtualmachine:
+        resource_group: "{{ rg_name }}"
+        name: "vm-web-prod-01"
+        vm_size: "Standard_B2s"
+        admin_username: "azureuser"
+        ssh_password_enabled: false
+        ssh_public_keys:
+          - path: /home/azureuser/.ssh/authorized_keys
+            key_data: "ssh-ed25519 AAAAC3NzaC..."
+        image:
+          offer: 0001-com-ubuntu-server-jammy
+          publisher: Canonical
+          sku: '22_04-lts'
+          version: latest`
+          },
+          day2_ops: {
+            filename: "azure_keyvault_secrets.yml",
+            code: `# جلب الأسرار مباشرة من Azure Key Vault أثناء تشغيل الـ Playbook!
+---
+- name: Fetch Secrets from Azure Key Vault and Configure App
+  hosts: tag_Role_web
+  become: true
+
+  vars:
+    vault_url: "https://corp-prod-kv.vault.azure.net"
+
+  tasks:
+    - name: Lookup database password from Azure Key Vault
+      ansible.builtin.set_fact:
+        db_password: "{{ lookup('azure.azcollection.azure_keyvault_secret', 'prod-db-pass', vault_url=vault_url) }}"
+      no_log: true # منع طباعة كلمة المرور في الـ Logs!
+
+    - name: Render application config with secret
+      ansible.builtin.template:
+        src: app.env.j2
+        dest: /etc/app/.env
+        mode: '0600'`
+          }
+        }
+      },
+
+      gcp: {
+        name: "Google Cloud Platform (`google.cloud`)",
+        collectionName: "google.cloud",
+        authMethods: [
+          "التوثيق عبر Service Account JSON أو Workload Identity (`GCP_AUTH_KIND=serviceaccount`, `GCP_SERVICE_account_FILE`).",
+          "الـ Dynamic Inventory الرسمي هو `google.cloud.gcp_compute` ويكتشف سيرفرات GCE تلقائياً عبر الـ Labels والـ Zones.",
+          "يمكن الاتصال بالسيرفرات المعزولة بدون Public IP عبر نفق `gcloud compute start-iap-tunnel` مع Ansible SSH ProxyCommand."
+        ],
+        reqLibs: "تثبيت المجموعة عبر `ansible-galaxy collection install google.cloud` ومكتبات `pip install requests google-auth`.",
+        keyGotchas: "يجب أن ينتهي اسم ملف الـ Dynamic Inventory لـ GCP بـ `.gcp.yml` أو `.gcp_compute.yml`!",
+        scenes: {
+          dyn_inventory: {
+            filename: "inventory/prod.gcp.yml",
+            code: `# ملف Dynamic Inventory لسحابة Google Cloud (GCE)
+---
+plugin: google.cloud.gcp_compute
+projects:
+  - my-enterprise-gcp-prod
+zones:
+  - me-central2-a   # منطقة الدمام
+  - me-central2-b
+
+auth_kind: application
+
+# تقسيم السيرفرات تلقائياً حسب الـ Labels في GCP
+keyed_groups:
+  - key: labels
+    prefix: gcp_label
+  - key: zone
+    prefix: gcp_zone
+
+compose:
+  ansible_host: networkInterfaces[0].networkIP`
+          },
+          cloud_provisioning: {
+            filename: "gcp_provision_gce.yml",
+            code: `---
+- name: Create Google Cloud VPC and GCE Instance
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    gcp_project: "my-enterprise-gcp-prod"
+    gcp_zone: "me-central2-a"
+
+  tasks:
+    - name: Create Global VPC Network
+      google.cloud.gcp_compute_network:
+        name: "ansible-gcp-network"
+        auto_create_subnetworks: true
+        project: "{{ gcp_project }}"
+        auth_kind: application
+        state: present
+      register: gcp_net
+
+    - name: Launch GCE Instance in Dammam Region
+      google.cloud.gcp_compute_instance:
+        name: "gce-web-prod-01"
+        machine_type: "e2-medium"
+        zone: "{{ gcp_zone }}"
+        project: "{{ gcp_project }}"
+        auth_kind: application
+        disks:
+          - auto_delete: true
+            boot: true
+            initialize_params:
+              source_image: "projects/debian-cloud/global/images/family/debian-12"
+        network_interfaces:
+          - network: "{{ gcp_net }}"
+        labels:
+          env: prod
+          role: web`
+          },
+          day2_ops: {
+            filename: "gcp_iap_ssh_config.cfg",
+            code: `# إعداد ansible.cfg للاتصال بسيرفرات GCP الخاصة عبر Identity-Aware Proxy (IAP) بدون Public IP:
+[ssh_connection]
+ssh_args = -o ProxyCommand="gcloud compute start-iap-tunnel %h %p --listen-on-stdin --project=my-enterprise-gcp-prod --zone=me-central2-a"
+pipelining = True`
+          }
+        }
+      },
+
+      huawei: {
+        name: "Huawei Cloud (`hwce.hwc` & OpenStack/SDK)",
+        collectionName: "hwce.hwc / community.general",
+        authMethods: [
+          "التوثيق عبر مفاتيح `HW_ACCESS_KEY` و `HW_SECRET_KEY` واسم المنطقة مثل `me-east-1` (الرياض) أو `ae-ad-1` (أبوظبي).",
+          "توفر Huawei Cloud موديولات `hwc_vpc`, `hwc_vpc_subnet`, `hwc_networking_secgroup`, `hwc_ecs_instance`, و `hwc_cce_cluster`.",
+          "يمكن أيضاً استخدام Dynamic Inventory لجلب سيرفرات Huawei ECS تلقائياً وتصنيفها حسب الـ Tags والـ Enterprise Project."
+        ],
+        reqLibs: "تثبيت حزم `huaweicloudsdkcore` و `huaweicloudsdkecs`، أو استخدام موديولات Huawei Cloud Ansible Collection.",
+        keyGotchas: "عند إنشاء سيرفر `hwc_ecs_instance` في Huawei Cloud، تأكد من تمرير `availability_zone` و `flavor_id` متوافقين مع المنطقة المختارة!",
+        scenes: {
+          dyn_inventory: {
+            filename: "inventory/huawei_ecs_inventory.yml",
+            code: `# إعداد Inventory لسيرفرات Huawei Cloud ECS (منطقة الرياض me-east-1)
+---
+all:
+  vars:
+    ansible_user: root
+    ansible_ssh_private_key_file: ~/.ssh/huawei_prod_key.pem
+    hw_region: "me-east-1"
+
+  children:
+    huawei_riyadh_web:
+      hosts:
+        ecs-web-01:
+          ansible_host: 192.168.1.101
+          ecs_flavor: s6.large.2
+        ecs-web-02:
+          ansible_host: 192.168.1.102
+          ecs_flavor: s6.large.2`
+          },
+          cloud_provisioning: {
+            filename: "huawei_cloud_ecs.yml",
+            code: `---
+- name: Provision Huawei Cloud VPC, Subnet, and ECS Instance
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    hw_region: "me-east-1" # الرياض
+
+  tasks:
+    - name: Create Huawei Cloud VPC
+      hwc_vpc:
+        name: "vpc-ansible-riyadh"
+        cidr: "192.168.0.0/16"
+        region: "{{ hw_region }}"
+      register: vpc
+
+    - name: Create Huawei Cloud Subnet
+      hwc_vpc_subnet:
+        vpc_id: "{{ vpc.id }}"
+        name: "subnet-ansible-app"
+        cidr: "192.168.1.0/24"
+        gateway_ip: "192.168.1.1"
+        region: "{{ hw_region }}"
+      register: subnet
+
+    - name: Create Huawei ECS Server Instance
+      hwc_ecs_instance:
+        name: "ecs-prod-app-01"
+        image_id: "d03f1c2e-ubuntu-2204-x64"
+        flavor_name: "s6.large.2"
+        availability_zone: "me-east-1a"
+        vpc_id: "{{ vpc.id }}"
+        nics:
+          - subnet_id: "{{ subnet.id }}"
+        root_volume:
+          volume_type: "SAS"
+          size: 40`
+          },
+          day2_ops: {
+            filename: "huawei_ecs_hardening.yml",
+            code: `---
+- name: Harden Huawei Cloud ECS Linux Servers & Configure Firewall
+  hosts: huawei_riyadh_web
+  become: true
+
+  tasks:
+    - name: Disable root password login over SSH
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PasswordAuthentication'
+        line: 'PasswordAuthentication no'
+        validate: '/usr/sbin/sshd -t -f %s'
+      notify: Restart SSHD
+
+    - name: Configure kernel sysctl network security parameters
+      ansible.posix.sysctl:
+        name: net.ipv4.ip_forward
+        value: '1'
+        state: present
+        reload: true
+
+  handlers:
+    - name: Restart SSHD
+      ansible.builtin.systemd:
+        name: sshd
+        state: restarted`
+          }
+        }
+      },
+
+      tf_integration: {
+        name: "التكامل الذهبي: Terraform + Ansible معاً (`cloud.terraform`)",
+        collectionName: "cloud.terraform & ansible/ansible",
+        authMethods: [
+          "في المشاريع الواقعية الكبرى، نجمع قوّة الأداتين معاً: **Terraform** ينشئ الشبكات والسيرفرات (Day-1 Provisioning)، و **Ansible** يثبت البرامج ويهيئ الأنظمة (Day-2 Configuration).",
+          "الطريقة الحديثة (الأفضل 100%): استخدام `cloud.terraform.terraform_provider` Inventory Plugin في Ansible، والذي يقرأ ملف `terraform.tfstate` مباشرة ويحول الموارد التي أنشأها Terraform إلى Ansible Inventory تلقائياً بدون سكربتات يدوية!",
+          "طريقة ثانية: استدعاء `cloud.terraform.terraform` من داخل Ansible، أو استخدام Terraform Provider `ansible/ansible` لتعريف `ansible_host` داخل كود HCL."
+        ],
+        reqLibs: "تثبيت المجموعة الرسمية المعتمدة من Red Hat و HashiCorp: `ansible-galaxy collection install cloud.terraform`.",
+        keyGotchas: "تجنب استخدام `remote-exec` داخل Terraform قدر الإمكان؛ بدلاً من ذلك استخدم `cloud.terraform` Inventory Plugin أو شغّل Ansible في الخطوة التالية من أنبوب الـ CI/CD!",
+        scenes: {
+          dyn_inventory: {
+            filename: "inventory/terraform_state_inventory.yml",
+            code: `# الطريقة العصرية: Ansible يقرأ السيرفرات مباشرة من ملف terraform.tfstate!
+# يتطلب: ansible-galaxy collection install cloud.terraform
+---
+plugin: cloud.terraform.terraform_provider
+project_path: ../terraform-infra/
+state_file: ../terraform-infra/terraform.tfstate
+
+#ويلتقط تلقائياً أي مورد من نوع ansible_host تم تعريفه داخل كود Terraform!`
+          },
+          cloud_provisioning: {
+            filename: "main.tf (ربط Terraform بـ Ansible Inventory)",
+            code: `# داخل مشروع Terraform: نستخدم مزود ansible/ansible لتصدير السيرفرات تلقائياً
+terraform {
+  required_providers {
+    aws     = { source = "hashicorp/aws", version = "~> 5.0" }
+    ansible = { source = "ansible/ansible", version = "~> 1.3.0" }
+  }
+}
+
+resource "aws_instance" "app_nodes" {
+  count         = 3
+  ami           = "ami-0c55b159cbfafe1f0"
+  instance_type = "t3.medium"
+}
+
+# هذا المورد يسجل السيرفرات ومجموعاتها ومتغيراتها في الـ tfstate ليقرأها Ansible فوراً!
+resource "ansible_host" "app_inventory" {
+  count  = 3
+  name   = aws_instance.app_nodes[count.index].public_ip
+  groups = ["webservers", "prod"]
+  variables = {
+    ansible_user = "ubuntu"
+    http_port    = 8080
+  }
+}`
+          },
+          day2_ops: {
+            filename: "orchestrate_terraform_from_ansible.yml",
+            code: `# تشغيل خطة Terraform وتطبيقها مباشرة من داخل Ansible Playbook!
+---
+- name: Deploy Cloud Infrastructure with Terraform then Configure with Ansible
+  hosts: localhost
+  connection: local
+
+  tasks:
+    - name: Apply Terraform infrastructure configuration
+      cloud.terraform.terraform:
+        project_path: "./terraform_multi_cloud"
+        state: present
+        force_init: true
+        variables:
+          environment: "production"
+      register: tf_result
+
+    - name: Refresh in-memory Ansible inventory from new Terraform state
+      ansible.builtin.meta: refresh_inventory`
+          }
+        }
+      },
+
+      k8s_network: {
+        name: "Kubernetes (`kubernetes.core`), Windows (`ansible.windows`) & Cisco",
+        collectionName: "kubernetes.core, ansible.windows, cisco.ios",
+        authMethods: [
+          "مع Kubernetes: يستخدم ملف `KUBECONFIG` لنشر وتحديث تطبيقات K8s ورسوم Helm Charts بـ Idempotency كامل.",
+          "مع Windows Servers: يتصل بدون عميل عبر WinRM أو OpenSSH ويدير Active Directory، IIS، Registry، والتحديثات.",
+          "مع أجهزة الشبكات (Cisco, Juniper, Arista, Fortinet): يتصل عبر `ansible.netcommon.network_cli` أو `httpapi` أو `netconf` لأتمتة الـ VLANs والـ BGP والـ Firewalls."
+        ],
+        reqLibs: "تثبيت `kubernetes.core`، `ansible.windows`، أو `cisco.ios` حسب البيئة المستهدفة.",
+        keyGotchas: "في أجهزة الشبكات (Cisco IOS وغيرها) لا يوجد Python على الراوتر أو السويتش، لذلك ينفذ Ansible الموديول محلياً على الـ Control Node ويرسل أوامر CLI عبر قناة SSH!",
+        scenes: {
+          dyn_inventory: {
+            filename: "k8s_and_helm_deploy.yml",
+            code: `---
+- name: Manage Kubernetes Resources and Helm Releases with Ansible
+  hosts: localhost
+  connection: local
+
+  tasks:
+    - name: Ensure Production Namespace exists in Kubernetes
+      kubernetes.core.k8s:
+        name: production-apps
+        api_version: v1
+        kind: Namespace
+        state: present
+
+    - name: Deploy Ingress-Nginx via Helm Chart idempotently
+      kubernetes.core.helm:
+        name: ingress-nginx
+        chart_ref: ingress-nginx/ingress-nginx
+        release_namespace: production-apps
+        create_namespace: true
+        values:
+          controller:
+            replicaCount: 2`
+          },
+          cloud_provisioning: {
+            filename: "windows_server_automation.yml",
+            code: `---
+- name: Automate Windows Server IIS and Firewall via WinRM
+  hosts: windows_servers
+  gather_facts: true
+
+  vars:
+    ansible_connection: winrm
+    ansible_winrm_transport: kerberos
+    ansible_port: 5986
+
+  tasks:
+    - name: Install IIS Web-Server Windows Feature
+      ansible.windows.win_feature:
+        name: Web-Server
+        state: present
+        include_management_tools: true
+      register: iis_install
+
+    - name: Reboot Windows Server if feature installation requires it
+      ansible.windows.win_reboot:
+      when: iis_install.reboot_required`
+          },
+          day2_ops: {
+            filename: "cisco_ios_network_automation.yml",
+            code: `---
+- name: Configure VLANs and Backup Config on Cisco IOS Switches
+  hosts: cisco_switches
+  gather_facts: false
+  connection: ansible.netcommon.network_cli
+
+  vars:
+    ansible_network_os: cisco.ios.ios
+
+  tasks:
+    - name: Backup current running-config before changes
+      cisco.ios.ios_config:
+        backup: true
+
+    - name: Ensure VLAN 100 (Production_Servers) is configured
+      cisco.ios.ios_vlans:
+        config:
+          - vlan_id: 100
+            name: Production_Servers
+            state: active
+        state: merged`
+          }
+        }
+      }
+    };
+
+    // ==================== DATA: COMPREHENSIVE GLOSSARY (24 ITEMS) ====================
+    const glossaryData = [
+      { term: "Agentless Architecture", cat: "core", desc: "معمارية لا تتطلب تثبيت أي برنامج عميل (Agent) على السيرفرات المستهدفة، بل تعتمد على SSH للينكس و WinRM للويندوز.", code: `ansible all -m ping # يتصل عبر SSH فقط` },
+      { term: "Idempotency (الحيادية التكرارية)", cat: "core", desc: "الخاصية الجوهرية في Ansible: تشغيل نفس الـ Playbook عدة مرات يضمن الوصول لنفس الحالة المطلوبة دون تكرار التغييرات المطبقة مسبقاً.", code: `# المرة 1: changed=1 | المرة 2: changed=0 (ok)` },
+      { term: "Control Node vs Managed Node", cat: "core", desc: "الـ Control Node هو الجهاز الذي يحمل Ansible ويدير التشغيل، والـ Managed Nodes هي السيرفرات أو السحابات أو أجهزة الشبكة المستهدفة.", code: `# Control Node يتطلب Linux / macOS / WSL` },
+      { term: "Inventory (Static & Dynamic)", cat: "core", desc: "مصدر قائمة السيرفرات ومجموعاتها. يكون ثابتاً (ملف INI/YAML) أو ديناميكياً يستعلم من AWS/Azure/GCP/Huawei/Terraform تلقائياً.", code: `ansible-inventory -i aws_ec2.yml --graph` },
+      { term: "Ad-Hoc Commands", cat: "core", desc: "أوامر فورية من سطر واحد لتنفيذ مهمة سريعة على عشرات السيرفرات دون الحاجة لكتابة ملف Playbook.", code: `ansible web -m ansible.builtin.shell -a "uptime"` },
+      { term: "FQCN (Fully Qualified Collection Name)", cat: "playbook", desc: "كتابة الاسم الكامل للموديول شاملاً اسم المجموعة (`namespace.collection.module`) لتفادي أي التباس.", code: `ansible.builtin.copy:\n  src: a.txt\n  dest: /tmp/a.txt` },
+      { term: "Playbook, Play & Task", cat: "playbook", desc: "الـ Playbook هو ملف YAML الشامل، يتكون من Plays تربط مجموعة سيرفرات بقائمة Tasks تنفذ الـ Modules بالترتيب.", code: `- name: My Play\n  hosts: webservers\n  tasks: [...]` },
+      { term: "Handlers & notify", cat: "playbook", desc: "مهام خاصة (مثل إعادة تشغيل خدمة) لا تعمل إلا إذا أحدثت المهمة تغييراً فعلياً (changed) وأرسلت إشعار notify، وتنفذ في آخر الـ Play.", code: `notify: Restart Nginx\n# لتشغيلها فوراً: meta: flush_handlers` },
+      { term: "Facts (`ansible_facts` & `setup`)", cat: "playbook", desc: "بيانات شاملة يجمعها Ansible تلقائياً من السيرفر قبل بدء المهام (مثل الـ IP، التوزيعة، المعالج، الرام، الأقراص).", code: `when: ansible_facts['os_family'] == "RedHat"` },
+      { term: "register & debug", cat: "playbook", desc: "الكلمة `register` تحفظ مخرجات تنفيذ أي مهمة داخل متغير جديد لاستخدامه في الشروط أو طباعته بـ `debug`.", code: `register: cmd_out\n- debug: var=cmd_out.stdout_lines` },
+      { term: "block / rescue / always", cat: "playbook", desc: "آلية تجميع المهام ومعالجة الأخطاء (تشبه try/catch/finally) لتنفيذ خطوات تعافٍ أو Rollback آلي عند حدوث فشل.", code: `block:\n  - ...\nrescue:\n  - debug: msg="Rollback!"` },
+      { term: "changed_when & failed_when", cat: "playbook", desc: "تُستخدم للتحكم اليدوي في متى يعتبر Ansible المهمة قد أحدثت تغييراً (مهم جداً مع command/shell) أو متى يعتبرها فاشلة.", code: `ansible.builtin.command: /usr/bin/check_status\nchanged_when: false` },
+      { term: "Jinja2 Templates (`.j2`)", cat: "roles", desc: "قوالب نصية ديناميكية تدعم المتغيرات والشروط والحلقات لتوليد ملفات الإعدادات المخصصة لكل سيرفر عبر موديول `template`.", code: `listen {{ http_port | default(80) }};` },
+      { term: "Jinja2 Filters (الفلاتر)", cat: "roles", desc: "دوال تحويل البيانات داخل `{{ var | filter }}` مثل `default`, `join`, `map`, `selectattr`, `to_json`, `ipaddr`, `b64encode`.", code: `{{ users | map(attribute='name') | list }}` },
+      { term: "Ansible Roles", cat: "roles", desc: "الطريقة القياسية لتقسيم الكود إلى وحدات معيارية مستقلة قابلة لإعادة الاستخدام والمشاركة عبر هيكل مجلدات موحد.", code: `ansible-galaxy role init my_custom_role` },
+      { term: "Ansible Collections", cat: "roles", desc: "صيغة التغليف الحديثة التي تجمع Modules و Roles و Plugins معاً (مثل `amazon.aws` و `kubernetes.core`).", code: `ansible-galaxy collection install amazon.aws` },
+      { term: "group_vars & host_vars", cat: "roles", desc: "مجلدات قياسية لفصل متغيرات كل مجموعة أو كل سيرفر في ملفات YAML مستقلة ونظيفة.", code: `inventory/\n  group_vars/webservers.yml\n  host_vars/web-01.yml` },
+      { term: "Magic Variables (`hostvars`, `groups`)", cat: "roles", desc: "متغيرات داخلية خاصة يوفرها Ansible للوصول لبيانات وحقائق السيرفرات الأخرى (`hostvars`) أو قائمة المجموعات (`groups`, `inventory_hostname`).", code: `{{ hostvars['db-01']['ansible_host'] }}` },
+      { term: "Ansible Vault", cat: "advanced", desc: "أداة التشفير المدمجة (AES-256) لحماية كلمات المرور والملفات الحساسة داخل مستودعات Git.", code: `ansible-vault encrypt_string 'MySecret' --name 'db_pass'` },
+      { term: "delegate_to & run_once", cat: "advanced", desc: "تفويض تنفيذ مهمة محددة لتعمل على سيرفر آخر (مثل `localhost` أو Load Balancer) أو تشغيلها مرة واحدة فقط.", code: `delegate_to: localhost\nrun_once: true` },
+      { term: "Rolling Updates (`serial`) & `throttle`", cat: "advanced", desc: "تحديث السيرفرات على دفعات (`serial: 2` أو `25%`) لضمان عدم انقطاع الخدمة (Zero-Downtime).", code: `serial: "25%"\nmax_fail_percentage: 15` },
+      { term: "Forks, Pipelining & Execution Strategies", cat: "advanced", desc: "ضبط التوازي (`forks`)، وتفعيل `pipelining` لتقليل اتصالات SSH، واختيار استراتيجية التنفيذ (`linear` مقابل `free`).", code: `strategy: free # كل سيرفر ينطلق بأقصى سرعته دون انتظار البقية` },
+      { term: "Molecule & `ansible-lint`", cat: "advanced", desc: "أدوات الفحص والاختبار الآلي للتأكد من جودة الكود واختبار الـ Roles داخل حاويات معزولة.", code: `ansible-lint && molecule test` },
+      { term: "Execution Environments (EE) & AWX / AAP", cat: "advanced", desc: "تشغيل Ansible داخل صور حاويات قياسية (EE) وإدارته مؤسسياً عبر واجهة Red Hat AAP أو AWX مفتوحة المصدر.", code: `ansible-builder build --tag corp-ee:1.0` }
+    ];
+
+    // ==================== DATA: INTERVIEW QUESTIONS & QUIZ FOR ANSIBLE ====================
+    const interviewQuestions = [
+      {
+        level: "junior",
+        badge: "مبتدئ - أساسي جداً",
+        q: "1. ما معنى أن Ansible أداة Idempotent؟ وما الموديولات التي لا تحقق هذه الخاصية افتراضياً وكيف نعالجها؟",
+        a: "الـ Idempotency تعني أن تطبيق العملية مرة واحدة أو عدة مرات يؤدي إلى نفس حالة النظام النهائية دون إحداث تغييرات مكررة أو أعطال. معظم موديولات Ansible (مثل `apt`, `user`, `file`, `template`) هي Idempotent بطبيعتها لأنها تفحص الحالة الحالية أولاً قبل التنفيذ. أما موديولات `command` و `shell` و `raw` فهي **ليست Idempotent افتراضياً** لأنها تنفذ الأمر في كل مرة وتعطي `changed`. نعالج ذلك بإضافة معامل `creates: /path/to/file` (فلا يعمل الأمر إذا كان الملف موجوداً) أو باستخدام `register` مع `changed_when:`."
+      },
+      {
+        level: "junior",
+        badge: "مبتدئ - أساسي",
+        q: "2. ما الفرق الدقيق بين موديولات `command` و `shell` و `raw` في Ansible؟",
+        a: "1) `ansible.builtin.command`: هو الأكثر أماناً؛ ينفذ الأمر مباشرة دون المرور عبر غلاف الـ Shell (لذلك لا تعمل فيه رموز مثل `|` أو `>` أو `&&` أو متغيرات `$HOME`) وهو محمي من ثغرات الحقن. 2) `ansible.builtin.shell`: ينفذ الأمر داخل `/bin/sh` فيدعم الأنابيب (Pipes `|`) وإعادة التوجيه والمتغيرات البيئية. 3) `ansible.builtin.raw`: يرسل أمر SSH خام مباشرة دون استخدام نظام الموديولات، ويُستخدم فقط في حالة واحدة: عندما لا يكون Python مثبتاً بعد على السيرفر المستهدف (أو على بعض أجهزة الشبكات) لتثبيت Python لأول مرة!"
+      },
+      {
+        level: "junior",
+        badge: "مبتدئ - أساسي",
+        q: "3. ما الفرق بين موديول `copy` وموديول `template`؟",
+        a: "موديول `copy` ينسخ الملف الثابت كما هو حرفياً من الـ Control Node إلى الـ Managed Node (مناسب للملفات الثنائية، الشهادات الثابتة، والسكربتات الجامدة). أما موديول `template` فيقوم أولاً بمعالجة ملف بصيغة **Jinja2 (`.j2`)** واستبدال كافة المتغيرات `{{ var }}` وتنفيذ الحلقات والشروط ديناميكياً حسب بيانات كل سيرفر قبل نقل الملف الناتج."
+      },
+      {
+        level: "mid",
+        badge: "متوسط - عملي",
+        q: "4. داخل الـ Ansible Role، يوجد مجلد `defaults/` ومجلد `vars/`. ما الفرق الجوهري بينهما ومتى تستخدم كلاً منهما؟",
+        a: "الفرق يكمن في **هرم أولويات المتغيرات (Variable Precedence)**: المتغيرات في `defaults/main.yml` تمتلك **أضعف أولوية على الإطلاق** في Ansible، ولذلك نضع فيها القيم الافتراضية القابلة للتعديل (مثل رقم البورت أو إصدار الحزمة) بحيث يستطيع أي مهندس تغييرها بسهولة من `group_vars` أو من الـ Playbook. أما `vars/main.yml` فتمتلك أولوية عالية جداً تتغلب على متغيرات الـ Inventory، ولذلك نضع فيها فقط الثوابت الداخلية الخاصة بالـ Role (مثل اسم الحزمة حسب نظام التشغيل) التي لا نريد للمستخدم تغييرها."
+      },
+      {
+        level: "mid",
+        badge: "متوسط - عملي",
+        q: "5. متى تعمل الـ Handlers؟ وماذا يحدث إذا فشلت مهمة في منتصف الـ Playbook بعد أن قامت مهمة سابقة بعمل `notify` للـ Handler؟",
+        a: "الـ Handlers تعمل افتراضياً **مرة واحدة فقط في نهاية الـ Play** بعد انتهاء جميع الـ Tasks. إذا أردت إجبارها على العمل فوراً في منتصف الـ Playbook تستخدم مهمة `meta: flush_handlers`. أما إذا فشلت مهمة لاحقة وتوقف الـ Playbook على ذلك السيرفر، **فلن يعمل الـ Handler** افتراضياً! لإجبار الـ Handlers على العمل حتى لو فشلت مهمة لاحقة، نستخدم الخيار `force_handlers: true` في الـ Play أو `--force-handlers` في سطر الأوامر."
+      },
+      {
+        level: "mid",
+        badge: "متوسط - عملي",
+        q: "6. ما الفرق بين `import_tasks` (أو `import_role`) وبين `include_tasks` (أو `include_role`)؟",
+        a: "`import_*` هي عملية **ثابتة (Static)**: يقوم Ansible بقراءتها ودمجها بالكامل قبل بدء تشغيل الـ Playbook (Pre-processing)، لذلك لا يمكنك استخدام متغيرات ديناميكية ناتجة عن مهام سابقة في اسم الملف، وتُطبق الشروط `when:` على كل مهمة بداخلها فردياً. أما `include_*` فهي عملية **ديناميكية (Dynamic)**: يتم تحميلها وتنفيذها لحظة الوصول إليها أثناء وقت التشغيل (Runtime)، مما يسمح باستخدامها مع حلقات `loop` ومتغيرات ديناميكية."
+      },
+      {
+        level: "senior",
+        badge: "خبير - سيناريو معماري",
+        q: "7. لديك Playbook بطيء جداً يستغرق 40 دقيقة لتحديث 300 سيرفر عبر السحابات. كيف تقوم بتسريع أداء Ansible إلى أقصى حد؟",
+        a: "1) رفع قيمة `forks` في `ansible.cfg` من القيمة الافتراضية الصغيرة (5) إلى `30` أو `50` حسب قدرة الـ Control Node. 2) تفعيل `pipelining = True` في قسم `[ssh_connection]` لتقليل عدد جلسات SSH لكل مهمة. 3) تفعيل SSH Multiplexing (`ControlMaster=auto -o ControlPersist=60s`). 4) ضبط `gathering = smart` مع تفعيل **Fact Caching** (في Redis أو ملفات JSON) أو إيقاف `gather_facts: false` في الـ Plays التي لا تحتاجها. 5) استخدام `strategy: free` إذا كانت السيرفرات مستقلة ولا تحتاج لانتظار بعضها، واستخدام `async` للمهام الطويلة."
+      },
+      {
+        level: "senior",
+        badge: "خبير - سيناريو معماري",
+        q: "8. كيف تصمم معمارية متكاملة تجمع بين Terraform و Ansible عبر عدة سحابات (AWS, Azure, GCP, Huawei) بدون أي تدخل يدوي؟",
+        a: "التصميم القياسي في الشركات الكبرى يفصل المسؤوليات بوضوح: **المرحلة الأولى (Terraform)**: ينشئ الـ VPCs، الـ Subnets، الجدران النارية، والـ VMs على السحابات الأربع، ويضيف Tags موحدة لكل سيرفر (مثل `Env=Prod, Role=App`) أو يسجل الموارد عبر `ansible_host` في الـ State. **المرحلة الثانية (Ansible)**: في أنبوب الـ CI/CD (أو AWX/AAP Workflow)، يعمل Ansible مباشرة بعد Terraform مستخدماً **Dynamic Inventory Plugins** (`aws_ec2`, `azure_rm`, `gcp_compute`, أو `cloud.terraform.terraform_provider`) ليكتشف السيرفرات الجديدة تلقائياً، ويتصل بها عبر SSH/SSM/IAP لتطبيق الـ Roles القياسية وتأمين النظام ونشر التطبيقات."
+      }
+    ];
+
+    const quizQuestions = [
+      {
+        q: "1. في هرم أولويات المتغيرات (Variable Precedence) في Ansible، أي مكان يفوز دائماً وله الأولوية القصوى؟",
+        options: [
+          "ملف defaults/main.yml داخل الـ Role",
+          "ملف group_vars/all.yml",
+          "تمرير Extra Vars عبر سطر الأوامر (`-e \"var=value\"`)",
+          "متغيرات الـ Inventory المضيفة"
+        ],
+        correct: 2,
+        explanation: "صحيح 100%! المتغيرات الممررة عبر `-e` أو `--extra-vars` في سطر الأوامر تتغلب على جميع المتغيرات الأخرى في Ansible."
+      },
+      {
+        q: "2. كيف نجبر Ansible على تنفيذ الـ Handlers المعلقة فوراً في منتصف الـ Play بدلاً من الانتظار لنهاية الـ Play؟",
+        options: [
+          "ansible.builtin.meta: flush_handlers",
+          "ansible.builtin.command: run_handlers_now",
+          "notify_immediately: true",
+          "force_handlers: immediate"
+        ],
+        correct: 0,
+        explanation: "إجابة ممتازة! المهمة `meta: flush_handlers` تشغل جميع الـ Handlers التي تم إشعارها حتى تلك اللحظة فوراً."
+      },
+      {
+        q: "3. أي موديول يُستخدم لتثبيت حزمة Python لأول مرة على سيرفر جديد لا يحتوي على Python إطلاقاً؟",
+        options: [
+          "ansible.builtin.command",
+          "ansible.builtin.shell",
+          "ansible.builtin.raw",
+          "ansible.builtin.setup"
+        ],
+        correct: 2,
+        explanation: "أحسنت! موديول `raw` لا يعتمد على وجود Python على السيرفر المستهدف بل يرسل الأمر مباشرة عبر SSH."
+      },
+      {
+        q: "4. ما هو اسم إضافة الـ Dynamic Inventory الرسمية لاكتشاف سيرفرات AWS EC2 تلقائياً؟",
+        options: [
+          "amazon.aws.aws_ec2",
+          "hashicorp.aws.ec2_inventory",
+          "ansible.builtin.aws_hosts",
+          "boto3.ec2.dynamic"
+        ],
+        correct: 0,
+        explanation: "رائع! الإضافة الرسمية هي `amazon.aws.aws_ec2` ويجب أن ينتهي اسم ملفها بـ `aws_ec2.yml`."
+      },
+      {
+        q: "5. عند تشغيل Playbook مع الخيار `--check`، ماذا يفعل Ansible؟",
+        options: [
+          "يفحص فقط أخطاء المسافات في ملف YAML دون الاتصال بالسيرفرات",
+          "يشفر الملفات الحساسة باستخدام Ansible Vault",
+          "يتصل بالسيرفرات ويحاكي التنفيذ (Dry-Run) ليخبرك بما سيتغير دون إجراء أي تعديل فعلي",
+          "يحذف جميع الملفات المؤقتة من السيرفرات"
+        ],
+        correct: 2,
+        explanation: "صحيح! وضع `--check` هو وضع المحاكاة الآمنة (Dry-Run) لمعرفة التغييرات المتوقعة قبل تطبيقها."
+      },
+      {
+        q: "6. أي إعداد داخل `ansible.cfg` يقلل عدد عمليات الاتصال عبر SSH لكل مهمة ويضاعف سرعة تنفيذ الـ Playbook؟",
+        options: [
+          "retry_files_enabled = True",
+          "pipelining = True",
+          "host_key_checking = True",
+          "serial = 1"
+        ],
+        correct: 1,
+        explanation: "إجابة احترافية! تفعيل `pipelining = True` ينفذ كود بايثون عبر تدفق SSH مباشرة دون إنشاء ملفات مؤقتة متكررة."
+      }
+    ];
+
+    // ==================== STATE & STORAGE ====================
+    let completedStages = {};
+    let activeStageIndex = 0;
+    let activeCloud = "aws";
+    let activeScene = "dyn_inventory";
+    let quizAnswers = {};
+    let ansChartInstance = null;
+
+    function loadProgress() {
+      try {
+        const saved = localStorage.getItem("ansible_mastery_stages_v1");
+        if (saved) completedStages = JSON.parse(saved);
+      } catch (e) {
+        completedStages = {};
+      }
+      updateMasteryUI();
+    }
+
+    function saveProgress() {
+      try {
+        localStorage.setItem("ansible_mastery_stages_v1", JSON.stringify(completedStages));
+      } catch (e) {}
+      updateMasteryUI();
+    }
+
+    function updateMasteryUI() {
+      const total = roadmapData.length;
+      const doneCount = Object.values(completedStages).filter(Boolean).length;
+      const pct = Math.round((doneCount / total) * 100);
+      document.getElementById("mastery-percent").textContent = pct + "%";
+      document.getElementById("mastery-bar").style.width = pct + "%";
+    }
+
+    function showToast(msg, icon = "✅") {
+      const toast = document.getElementById("toast");
+      document.getElementById("toast-msg").textContent = msg;
+      document.getElementById("toast-icon").textContent = icon;
+      toast.classList.remove("hidden");
+      setTimeout(() => {
+        toast.classList.add("hidden");
+      }, 2600);
+    }
+
+    function copyTextSafe(text) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          showToast("تم نسخ الكود إلى الحافظة بنجاح!");
+        }).catch(() => fallbackCopy(text));
+      } else {
+        fallbackCopy(text);
+      }
+    }
+
+    function fallbackCopy(text) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); } catch (e) {}
+      document.body.removeChild(ta);
+      showToast("تم نسخ الكود إلى الحافظة بنجاح!");
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    // ==================== TAB NAVIGATION ====================
+    function switchTab(tabId) {
+      document.querySelectorAll(".tab-panel").forEach(p => p.classList.add("hidden"));
+      const target = document.getElementById("tab-" + tabId);
+      if (target) target.classList.remove("hidden");
+
+      document.querySelectorAll(".nav-tab").forEach(btn => {
+        if (btn.dataset.tab === tabId) {
+          btn.classList.add("tab-active");
+          btn.classList.remove("bg-slate-900/80", "text-slate-300");
+        } else {
+          btn.classList.remove("tab-active");
+          btn.classList.add("bg-slate-900/80", "text-slate-300");
+        }
+      });
+
+      if (tabId === "visualizer") {
+        setTimeout(initOrUpdateChart, 60);
+      }
+    }
+
+    document.querySelectorAll(".nav-tab").forEach(btn => {
+      btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+    });
+
+    // ==================== RENDER TAB 1: ROADMAP ====================
+    function renderRoadmapList() {
+      const listEl = document.getElementById("roadmap-steps-list");
+      listEl.innerHTML = roadmapData.map((item, idx) => {
+        const isDone = !!completedStages[item.id];
+        const isActive = idx === activeStageIndex;
+        return `
+          <div onclick="selectStage(${idx})" class="cursor-pointer p-3.5 rounded-xl border transition flex items-center justify-between gap-3 ${
+            isActive
+              ? "bg-red-950/60 border-red-500 shadow-lg shadow-red-900/20"
+              : "bg-slate-900/70 hover:bg-slate-800/80 border-slate-800"
+          }">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black ${
+                isDone ? "bg-emerald-500 text-slate-950" : isActive ? "bg-red-600 text-white" : "bg-slate-800 text-slate-300"
+              }">
+                ${isDone ? "✓" : idx + 1}
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-bold text-red-400">${item.step}</span>
+                  <span class="text-[11px] px-2 py-0.5 rounded bg-slate-800 text-slate-400">${item.level}</span>
+                </div>
+                <h4 class="text-xs md:text-sm font-bold text-white mt-0.5">${item.title}</h4>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderStageDetail() {
+      const stage = roadmapData[activeStageIndex];
+      const isDone = !!completedStages[stage.id];
+      const detailEl = document.getElementById("roadmap-stage-detail");
+
+      detailEl.innerHTML = `
+        <div class="flex flex-wrap items-start justify-between gap-4 border-b border-slate-800 pb-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-red-500/20 text-red-300 border border-red-500/30">${stage.step} — ${stage.level}</span>
+            </div>
+            <h3 class="text-xl md:text-2xl font-black text-white mt-2">${stage.title}</h3>
+            <p class="text-xs md:text-sm text-slate-300 mt-1">${stage.summary}</p>
+          </div>
+          <button onclick="toggleStageDone('${stage.id}')" class="px-4 py-2 rounded-xl font-bold text-xs md:text-sm transition flex items-center gap-2 ${
+            isDone
+              ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
+              : "bg-red-600 hover:bg-red-500 text-white shadow-lg shadow-red-600/30"
+          }">
+            <span>${isDone ? "✅ تم إتقان هذه المرحلة" : "☑️ علّم كمكتملة (أتقنتها)"}</span>
+          </button>
+        </div>
+
+        <!-- Detailed Bullet Points -->
+        <div class="space-y-2.5">
+          <h4 class="text-sm font-bold text-amber-300">📌 الشرح التفصيلي والمفاهيم الأساسية:</h4>
+          <ul class="space-y-2">
+            ${stage.points.map(p => `
+              <li class="flex items-start gap-2.5 bg-slate-900/70 border border-slate-800/90 p-3 rounded-xl text-xs md:text-sm text-slate-200 leading-relaxed">
+                <span class="text-red-400 font-bold mt-0.5">◆</span>
+                <span>${p}</span>
+              </li>
+            `).join("")}
+          </ul>
+        </div>
+
+        <!-- Essential CLI Commands -->
+        <div class="space-y-2">
+          <h4 class="text-sm font-bold text-emerald-300">💻 الأوامر العملية لهذه المرحلة:</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+            ${stage.commands.map(c => `
+              <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl flex flex-col justify-between gap-1">
+                <code class="code-ltr text-xs text-emerald-400 font-bold">${c.cmd}</code>
+                <span class="text-xs text-slate-400">${c.desc}</span>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+
+        <!-- Code Example -->
+        <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-2">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <span class="text-xs font-mono text-red-400 font-bold">${stage.codeTitle}</span>
+            <button onclick="copyStageCode()" class="text-xs px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 transition">📋 نسخ الكود</button>
+          </div>
+          <pre class="code-ltr text-xs md:text-sm text-slate-100 overflow-x-auto leading-relaxed">${escapeHtml(stage.code)}</pre>
+        </div>
+
+        <!-- Prev / Next Navigation -->
+        <div class="flex items-center justify-between pt-2">
+          <button onclick="selectStage(${Math.max(0, activeStageIndex - 1)})" ${activeStageIndex === 0 ? "disabled" : ""} class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-xs font-bold">
+            ➡️ المرحلة السابقة
+          </button>
+          <span class="text-xs text-slate-400">المرحلة ${activeStageIndex + 1} من ${roadmapData.length}</span>
+          <button onclick="selectStage(${Math.min(roadmapData.length - 1, activeStageIndex + 1)})" ${activeStageIndex === roadmapData.length - 1 ? "disabled" : ""} class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 disabled:opacity-40 text-white text-xs font-bold">
+            المرحلة التالية ⬅️
+          </button>
+        </div>
+      `;
+    }
+
+    window.selectStage = function(idx) {
+      activeStageIndex = idx;
+      renderRoadmapList();
+      renderStageDetail();
+    };
+
+    window.toggleStageDone = function(stageId) {
+      completedStages[stageId] = !completedStages[stageId];
+      saveProgress();
+      renderRoadmapList();
+      renderStageDetail();
+      if (completedStages[stageId]) {
+        showToast("أحسنت! تم تسجيل إتقان المرحلة في عداد تقدمك.", "🎉");
+      }
+    };
+
+    window.copyStageCode = function() {
+      copyTextSafe(roadmapData[activeStageIndex].code);
+    };
+
+    document.getElementById("reset-progress-btn").addEventListener("click", () => {
+      completedStages = {};
+      saveProgress();
+      renderRoadmapList();
+      renderStageDetail();
+      showToast("تمت إعادة ضبط عداد التقدم إلى 0%", "🔄");
+    });
+
+    // ==================== TAB 2: VISUAL SIMULATOR LOGIC ====================
+    const simStates = {
+      inventory: {
+        badge: "المرحلة 1: قراءة الـ Inventory وملف ansible.cfg",
+        title: "تحديد السيرفرات المستهدفة ودمج المتغيرات",
+        body: "يقرأ محرك Ansible ملف `ansible.cfg`، ثم يستدعي الـ Static أو Dynamic Inventory (مثل `aws_ec2.yml`)، ويجمع متغيرات `group_vars` و `host_vars` ويفك تشفير ملفات `Ansible Vault` في الذاكرة.",
+        tip: "💡 يمكنك استخدام أمر `ansible-inventory --graph --vars` للتأكد من المتغيرات النهائية لكل سيرفر قبل التشغيل.",
+        terminal: `$ ansible-inventory -i inventory/prod_aws_ec2.yml --graph
+@all:
+  |--@webservers:
+  |  |--web-01.prod.internal
+  |  |--web-02.prod.internal`,
+        sshStroke: "#475569", taskStroke: "#475569", nodeStroke: "#475569",
+        sshTxt: "SSH Multiplexing (جاهز)", factsTxt: "ansible_facts: لم تجمع بعد",
+        taskState: "الحالة: قراءة Playbook", notifyState: "Notify Handler: صامت", idemState: "Idempotency: جاهز",
+        pkg: "Nginx Pkg: غير مثبت", tpl: "nginx.conf.j2: غير منسوخ", svc: "Service: متوقف",
+        activeLink: null
+      },
+      facts: {
+        badge: "المرحلة 2: اتصال SSH وجمع الحقائق (Gathering Facts)",
+        title: "تشغيل موديول setup تلقائياً عبر SSH",
+        body: "يفتح Ansible اتصال SSH متوازياً (حسب عدد الـ `forks`) إلى جميع السيرفرات، ويرسل سكربت Python صغير لجمع `ansible_facts` (نوع التوزيعة Ubuntu 22.04، الـ IP، المعالج، الرام).",
+        tip: "💡 إذا كان الـ Playbook لا يعتمد على `ansible_facts`، ضع `gather_facts: false` لتوفير الوقت!",
+        terminal: `$ ansible-playbook site.yml
+PLAY [Configure and Harden Production Web Servers] *********************
+
+TASK [Gathering Facts] *************************************************
+ok: [web-01.prod.internal]
+ok: [web-02.prod.internal]`,
+        sshStroke: "#38BDF8", taskStroke: "#475569", nodeStroke: "#475569",
+        sshTxt: "SSH Connected 🔒 (Forks=2)", factsTxt: "ansible_facts: Ubuntu 22.04 ✅",
+        taskState: "الحالة: تم جمع الحقائق", notifyState: "Notify Handler: صامت", idemState: "OS: Debian Family",
+        pkg: "Nginx Pkg: غير مثبت", tpl: "nginx.conf.j2: غير منسوخ", svc: "Service: متوقف",
+        activeLink: "link-1-2"
+      },
+      check: {
+        badge: "المرحلة 3: التشغيل التجريبي الآمن (--check --diff)",
+        title: "محاكاة التغييرات دون تعديل السيرفر فعلياً (Dry-Run)",
+        body: "يتحقق كل موديول من حالة السيرفر الحالية ويقارنها بالحالة المطلوبة في الـ Playbook، ويعرض لك بالضبط ما الذي سيتغير (`changed`) والفروق النصية في القوالب (`--diff`) دون لمس السيرفر!",
+        tip: "💡 استخدم دائماً `--check --diff` في أنابيب الـ Pull Request قبل الاعتماد النهائي.",
+        terminal: `$ ansible-playbook site.yml --check --diff
+TASK [Ensure Nginx package is installed] *******************************
+changed: [web-01.prod.internal] (DRY-RUN)
+
+TASK [Deploy custom Nginx configuration file] **************************
+--- before: /etc/nginx/nginx.conf
++++ after: templates/nginx.conf.j2
++ worker_processes auto;
+changed: [web-01.prod.internal] (DRY-RUN)`,
+        sshStroke: "#38BDF8", taskStroke: "#A855F7", nodeStroke: "#475569",
+        sshTxt: "SSH Check Mode 🧪", factsTxt: "ansible_facts: محمّلة ✅",
+        taskState: "Dry-Run: سيتغير 3 مهام", notifyState: "Notify: سيُشعر عند التطبيق", idemState: "وضع الفحص الآمن",
+        pkg: "Nginx: سيُثبت (Check)", tpl: "nginx.conf: سيتحدث (Diff)", svc: "Service: سيبدأ (Check)",
+        activeLink: "link-2-3"
+      },
+      run1: {
+        badge: "المرحلة 4: التشغيل الفعلي الأول (CHANGED - اللون الأصفر)",
+        title: "تطبيق التغييرات لأول مرة على السيرفرات",
+        body: "لأن Nginx غير مثبت وملف الإعدادات غير موجود، ينفذ Ansible التغييرات ويعود بحالة `changed` (باللون الأصفر)، وبما أن مهمة القالب تغيرت فإنها ترسل إشارة `notify` إلى الـ Handler!",
+        tip: "💡 اللون الأصفر `changed` يعني أن Ansible قام بإجراء تعديل حقيقي على السيرفر ليطابق الكود.",
+        terminal: `$ ansible-playbook site.yml
+TASK [Ensure Nginx package is installed] *******************************
+changed: [web-01.prod.internal]
+changed: [web-02.prod.internal]
+
+TASK [Deploy custom Nginx configuration file] **************************
+changed: [web-01.prod.internal] -> (Notified: Reload Nginx Service)
+changed: [web-02.prod.internal] -> (Notified: Reload Nginx Service)`,
+        sshStroke: "#F59E0B", taskStroke: "#F59E0B", nodeStroke: "#F59E0B",
+        sshTxt: "Pushing Modules 🚀", factsTxt: "Jinja2 Rendered ✅",
+        taskState: "الحالة: CHANGED (أصفر) 🟡", notifyState: "Notify: تم جدولة الـ Handler 🔔", idemState: "تم تطبيق الحالة المطلوبة",
+        pkg: "Nginx Pkg: تم التثبيت 🟡", tpl: "nginx.conf: تم النسخ 🟡", svc: "Service: يعمل 🟢",
+        activeLink: "link-3-4"
+      },
+      handlers: {
+        badge: "المرحلة 5: تشغيل الـ Handlers في نهاية الـ Play",
+        title: "تنفيذ إعادة تحميل الخدمة (RUNNING HANDLER)",
+        body: "بعد انتهاء جميع الـ Tasks في الـ Play، ينفذ Ansible الـ Handler `Reload Nginx Service` مرة واحدة فقط لأن ملف الإعدادات تغير في الخطوة السابقة.",
+        tip: "💡 إذا لم يتغير ملف الإعدادات في المرات القادمة، فلن يعمل الـ Handler أبداً ولن تنقطع الخدمة!",
+        terminal: `RUNNING HANDLER [Reload Nginx Service] *********************************
+changed: [web-01.prod.internal]
+changed: [web-02.prod.internal]
+
+PLAY RECAP *************************************************************
+web-01.prod.internal : ok=4   changed=3   unreachable=0   failed=0
+web-02.prod.internal : ok=4   changed=3   unreachable=0   failed=0`,
+        sshStroke: "#10B981", taskStroke: "#F59E0B", nodeStroke: "#10B981",
+        sshTxt: "Handler Triggered 🔔", factsTxt: "Config Validated ✅",
+        taskState: "الحالة: اكتملت المهام", notifyState: "Handler: Reloaded Nginx ✅", idemState: "changed=3, failed=0",
+        pkg: "Nginx Pkg: مثبت 🟢", tpl: "nginx.conf: مطبق 🟢", svc: "Service: Reloaded 🔄",
+        activeLink: "link-3-4"
+      },
+      run2: {
+        badge: "المرحلة 6: التشغيل الثاني وإثبات الـ Idempotency (OK - اللون الأخضر)",
+        title: "إعادة تشغيل نفس الـ Playbook مرة ثانية!",
+        body: "هنا يظهر سحر الـ Idempotency! يفحص Ansible السيرفرات فيجد أن Nginx مثبت بالفعل، وملف الإعدادات مطابق للـ Checksum (SHA1)، والخدمة تعمل؛ فلا يقوم بأي تعديل ويعطيك `ok` باللون الأخضر مع `changed=0` ولا يعمل الـ Handler!",
+        tip: "💡 في اختبارات Molecule، إذا لم يعطِ التشغيل الثاني `changed=0` يفشل الاختبار!",
+        terminal: `$ ansible-playbook site.yml
+TASK [Ensure Nginx package is installed] *******************************
+ok: [web-01.prod.internal]
+ok: [web-02.prod.internal]
+
+TASK [Deploy custom Nginx configuration file] **************************
+ok: [web-01.prod.internal]  # (No change -> Handler NOT notified!)
+ok: [web-02.prod.internal]
+
+PLAY RECAP *************************************************************
+web-01.prod.internal : ok=3   changed=0   unreachable=0   failed=0
+web-02.prod.internal : ok=3   changed=0   unreachable=0   failed=0`,
+        sshStroke: "#10B981", taskStroke: "#10B981", nodeStroke: "#10B981",
+        sshTxt: "Fast Checksum Check ⚡", factsTxt: "State Matches 100% ✅",
+        taskState: "الحالة: OK (أخضر) 🟢", notifyState: "Handler: لم يُستدعَ (0 تغييرات)", idemState: "Idempotent 100% (changed=0)",
+        pkg: "Nginx Pkg: OK 🟢", tpl: "nginx.conf: OK 🟢", svc: "Service: Running OK 🟢",
+        activeLink: "link-2-3"
+      }
+    };
+
+    window.runSimulation = function(cmd) {
+      const s = simStates[cmd];
+      if (!s) return;
+
+      document.querySelectorAll(".sim-cmd-btn").forEach(btn => {
+        if (btn.dataset.cmd === cmd) {
+          btn.classList.add("ring-2", "ring-red-400");
+        } else {
+          btn.classList.remove("ring-2", "ring-red-400");
+        }
+      });
+
+      document.getElementById("sim-stage-badge").textContent = s.badge;
+      document.getElementById("sim-explain-title").textContent = s.title;
+      document.getElementById("sim-explain-body").textContent = s.body;
+      document.getElementById("sim-tip").textContent = s.tip;
+      document.getElementById("sim-terminal-output").textContent = s.terminal;
+
+      document.getElementById("rect-ssh").setAttribute("stroke", s.sshStroke);
+      document.getElementById("rect-tasks").setAttribute("stroke", s.taskStroke);
+      document.getElementById("rect-nodes").setAttribute("stroke", s.nodeStroke);
+
+      document.getElementById("txt-ssh").textContent = s.sshTxt;
+      document.getElementById("txt-facts").textContent = s.factsTxt;
+      document.getElementById("txt-task-state").textContent = s.taskState;
+      document.getElementById("txt-notify-state").textContent = s.notifyState;
+      document.getElementById("txt-idem-state").textContent = s.idemState;
+
+      document.getElementById("node-pkg").textContent = s.pkg;
+      document.getElementById("node-tpl").textContent = s.tpl;
+      document.getElementById("node-svc").textContent = s.svc;
+
+      ["link-1-2", "link-2-3", "link-3-4"].forEach(id => {
+        const el = document.getElementById(id);
+        if (id === s.activeLink) {
+          el.setAttribute("stroke", "#EF4444");
+          el.classList.add("animate-dash");
+        } else {
+          el.setAttribute("stroke", "#475569");
+          el.classList.remove("animate-dash");
+        }
+      });
+    };
+
+    document.querySelectorAll(".sim-cmd-btn").forEach(btn => {
+      btn.addEventListener("click", () => runSimulation(btn.dataset.cmd));
+    });
+
+    const precedenceDetails = [
+      "🏆 1. Extra Vars (`-e` / `--extra-vars`): أعلى أولوية مطلقة (المرتبة 22 من 22 في توثيق Ansible). تُستخدم في سطر الأوامر أو أنابيب الـ CI/CD لتمرير إصدار التطبيق الجاري نشره (`-e app_version=2.4.1`) وتتغلب على أي ملف آخر.",
+      "⚡ 2. Task Vars & `set_fact` / `include_vars`: متغيرات تُولّد ديناميكياً أثناء التشغيل أو تُحدد على مستوى مهمة بعينها، وتتغلب على متغيرات الـ Play والـ Inventory.",
+      "📘 3. Play `vars:` & Role `vars/main.yml`: المتغيرات المكتوبة مباشرة داخل الـ Playbook أو داخل مجلد `vars/` في الـ Role. انتبه: لأن أولويتها أعلى من الـ Inventory، لا تضع في `role/vars/` متغيرات تريد تعديلها لكل بيئة!",
+      "🗂️ 4. Inventory `host_vars/` و `group_vars/`: المكان المثالي والأكثر تنظيماً لوضع متغيرات البيئات (مثل `group_vars/prod.yml` و `group_vars/dev.yml`). متغيرات السيرفر الفردي `host_vars` تغلب متغيرات المجموعة `group_vars`.",
+      "🌱 5. Role Defaults (`roles/x/defaults/main.yml`): أضعف أولوية في Ansible! وهو أفضل مكان لوضع القيم الافتراضية للمتغيرات داخل أي Role لأن المستخدم يستطيع تخصيصها وتجاوزها من أي مكان آخر بسهولة."
+    ];
+
+    window.inspectPrecedence = function(idx) {
+      document.getElementById("precedence-info").textContent = precedenceDetails[idx];
+    };
+
+    // ==================== CHART.JS VISUALIZATION ====================
+    function initOrUpdateChart() {
+      const ctx = document.getElementById("ansibleChart");
+      if (!ctx) return;
+      const metric = document.getElementById("chart-metric-select").value;
+
+      if (ansChartInstance) {
+        ansChartInstance.destroy();
+      }
+
+      if (metric === "comparison") {
+        ansChartInstance = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: [
+              "تهيئة نظام التشغيل والبرامج",
+              "أتمتة أجهزة الشبكات والـ Switches",
+              "التحديث المتدرج للتطبيقات",
+              "بناء البنية السحابية من الصفر",
+              "إدارة دورة حياة الـ State"
+            ],
+            datasets: [
+              {
+                label: "Ansible (Configuration & Operations)",
+                data: [99, 97, 95, 65, 40],
+                backgroundColor: "rgba(238, 0, 0, 0.75)",
+                borderColor: "#EE0000",
+                borderWidth: 2,
+                borderRadius: 6
+              },
+              {
+                label: "Terraform (Cloud Provisioning)",
+                data: [25, 45, 50, 99, 99],
+                backgroundColor: "rgba(123, 66, 188, 0.75)",
+                borderColor: "#A855F7",
+                borderWidth: 2,
+                borderRadius: 6
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { labels: { color: "#E2E8F0", font: { family: "Cairo" } } }
+            },
+            scales: {
+              y: { beginAtZero: true, max: 100, ticks: { color: "#94A3B8" }, grid: { color: "#1E293B" } },
+              x: { ticks: { color: "#E2E8F0", font: { family: "Cairo", size: 10 } }, grid: { display: false } }
+            }
+          }
+        });
+      } else {
+        ansChartInstance = new Chart(ctx, {
+          type: "doughnut",
+          data: {
+            labels: [
+              "كتابة Playbooks والـ Modules والـ Handlers (25%)",
+              "الـ Roles والـ Collections وقوالب Jinja2 (25%)",
+              "Dynamic Inventory والسحابات الخمس (20%)",
+              "المتغيرات، الـ Facts، ومعالجة الأخطاء (15%)",
+              "Vault، الأداء، Molecule و AWX/AAP (15%)"
+            ],
+            datasets: [{
+              data: [25, 25, 20, 15, 15],
+              backgroundColor: ["#EE0000", "#F59E0B", "#38BDF8", "#10B981", "#A855F7"],
+              borderColor: "#090D16",
+              borderWidth: 3
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: "right", labels: { color: "#E2E8F0", font: { family: "Cairo", size: 11 } } }
+            }
+          }
+        });
+      }
+    }
+
+    document.getElementById("chart-metric-select").addEventListener("change", initOrUpdateChart);
+
+    // ==================== TAB 3: MULTI-CLOUD LAB RENDER ====================
+    function renderMultiCloud() {
+      const c = multiCloudData[activeCloud];
+      const s = c.scenes[activeScene];
+
+      document.querySelectorAll(".cloud-btn").forEach(btn => {
+        if (btn.dataset.cloud === activeCloud) {
+          btn.classList.add("tab-active");
+          btn.classList.remove("bg-slate-900/90");
+        } else {
+          btn.classList.remove("tab-active");
+          btn.classList.add("bg-slate-900/90");
+        }
+      });
+
+      document.querySelectorAll(".scene-btn").forEach(btn => {
+        if (btn.dataset.scene === activeScene) {
+          btn.classList.add("bg-red-600", "text-white");
+          btn.classList.remove("bg-slate-800", "text-slate-300");
+        } else {
+          btn.classList.remove("bg-red-600", "text-white");
+          btn.classList.add("bg-slate-800", "text-slate-300");
+        }
+      });
+
+      document.getElementById("cloud-info-panel").innerHTML = `
+        <div class="border-b border-slate-800 pb-3">
+          <span class="text-xs font-mono text-red-300 bg-red-950/60 px-2.5 py-1 rounded border border-red-500/30">${c.collectionName}</span>
+          <h3 class="text-lg font-black text-white mt-2">${c.name}</h3>
+        </div>
+        <div class="space-y-2">
+          <h4 class="text-xs font-bold text-emerald-300">🔑 كيف يعمل Ansible مع هذه البيئة؟</h4>
+          <ul class="space-y-1.5 text-xs text-slate-300 leading-relaxed">
+            ${c.authMethods.map(m => `<li class="flex items-start gap-2"><span class="text-emerald-400">•</span><span>${m}</span></li>`).join("")}
+          </ul>
+        </div>
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-3 space-y-1">
+          <h4 class="text-xs font-bold text-sky-300">📦 المتطلبات والتثبيت (Collections &amp; SDK):</h4>
+          <p class="text-xs text-slate-300 leading-relaxed">${c.reqLibs}</p>
+        </div>
+        <div class="bg-amber-950/30 border border-amber-500/30 rounded-xl p-3 space-y-1">
+          <h4 class="text-xs font-bold text-amber-300">⚠️ تفصيلة معمارية مهمة (Gotcha):</h4>
+          <p class="text-xs text-slate-200 leading-relaxed">${c.keyGotchas}</p>
+        </div>
+      `;
+
+      document.getElementById("cloud-code-filename").textContent = s.filename;
+      document.getElementById("cloud-code-display").textContent = s.code;
+    }
+
+    document.querySelectorAll(".cloud-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        activeCloud = btn.dataset.cloud;
+        renderMultiCloud();
+      });
+    });
+
+    document.querySelectorAll(".scene-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        activeScene = btn.dataset.scene;
+        renderMultiCloud();
+      });
+    });
+
+    document.getElementById("copy-cloud-code").addEventListener("click", () => {
+      const code = multiCloudData[activeCloud].scenes[activeScene].code;
+      copyTextSafe(code);
+    });
+
+    // ==================== TAB 4: GLOSSARY RENDER ====================
+    function renderGlossary() {
+      const q = document.getElementById("glossary-search").value.trim().toLowerCase();
+      const cat = document.getElementById("glossary-cat").value;
+
+      const filtered = glossaryData.filter(item => {
+        const matchesCat = cat === "all" || item.cat === cat;
+        const matchesQ = !q || item.term.toLowerCase().includes(q) || item.desc.toLowerCase().includes(q) || item.code.toLowerCase().includes(q);
+        return matchesCat && matchesQ;
+      });
+
+      const grid = document.getElementById("glossary-grid");
+      if (filtered.length === 0) {
+        grid.innerHTML = `<div class="col-span-2 text-center py-8 text-slate-400 text-sm">لا توجد نتائج مطابقة لبحثك. جرّب كلمة أخرى!</div>`;
+        return;
+      }
+
+      const catLabels = {
+        core: "أساسيات ومعمارية",
+        playbook: "Playbooks & Tasks",
+        roles: "Roles & Jinja2",
+        advanced: "أمان وأداء ومؤسسات"
+      };
+
+      grid.innerHTML = filtered.map(item => `
+        <div class="bg-slate-900/80 border border-slate-800 hover:border-red-500/40 transition rounded-xl p-4 flex flex-col justify-between gap-3">
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between gap-2">
+              <h4 class="text-sm md:text-base font-black text-red-400 font-mono code-ltr">${item.term}</h4>
+              <span class="text-[11px] px-2 py-0.5 rounded bg-slate-800 text-slate-300">${catLabels[item.cat] || item.cat}</span>
+            </div>
+            <p class="text-xs md:text-sm text-slate-300 leading-relaxed">${item.desc}</p>
+          </div>
+          <pre class="code-ltr bg-slate-950 border border-slate-800/90 rounded-lg p-2.5 text-xs text-amber-300 overflow-x-auto">${escapeHtml(item.code)}</pre>
+        </div>
+      `).join("");
+    }
+
+    document.getElementById("glossary-search").addEventListener("input", renderGlossary);
+    document.getElementById("glossary-cat").addEventListener("change", renderGlossary);
+
+    // ==================== TAB 5: INTERVIEW & QUIZ ====================
+    function renderInterviewQuestions(levelFilter = "all") {
+      const list = document.getElementById("interview-questions-list");
+      const filtered = interviewQuestions.filter(item => levelFilter === "all" || item.level === levelFilter);
+
+      list.innerHTML = filtered.map((item, idx) => `
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl overflow-hidden">
+          <button onclick="toggleIqAnswer(${idx})" class="w-full p-4 text-right flex items-center justify-between gap-3 hover:bg-slate-800/60 transition">
+            <div class="space-y-1">
+              <span class="text-[11px] px-2 py-0.5 rounded bg-red-500/20 text-red-300 font-bold">${item.badge}</span>
+              <h4 class="text-xs md:text-sm font-bold text-white leading-relaxed">${item.q}</h4>
+            </div>
+            <span id="iq-icon-${idx}" class="text-red-400 font-black text-lg">+</span>
+          </button>
+          <div id="iq-ans-${idx}" class="hidden px-4 pb-4 pt-2 border-t border-slate-800/80 bg-slate-950/60 text-xs md:text-sm text-slate-200 leading-relaxed">
+            <strong class="text-emerald-400 block mb-1">💡 الإجابة النموذجية في المقابلة:</strong>
+            ${item.a}
+          </div>
+        </div>
+      `).join("");
+    }
+
+    window.toggleIqAnswer = function(idx) {
+      const ans = document.getElementById("iq-ans-" + idx);
+      const icon = document.getElementById("iq-icon-" + idx);
+      if (ans.classList.contains("hidden")) {
+        ans.classList.remove("hidden");
+        icon.textContent = "−";
+      } else {
+        ans.classList.add("hidden");
+        icon.textContent = "+";
+      }
+    };
+
+    document.querySelectorAll(".iq-filter-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".iq-filter-btn").forEach(b => b.classList.remove("bg-red-600", "text-white"));
+        btn.classList.add("bg-red-600", "text-white");
+        renderInterviewQuestions(btn.dataset.level);
+      });
+    });
+
+    function renderQuiz() {
+      const container = document.getElementById("quiz-container");
+      let score = 0;
+      quizQuestions.forEach((q, i) => {
+        if (quizAnswers[i] === q.correct) score++;
+      });
+      document.getElementById("quiz-score-badge").textContent = `النتيجة: ${score} / ${quizQuestions.length}`;
+
+      container.innerHTML = quizQuestions.map((q, qIdx) => {
+        const answered = quizAnswers[qIdx] !== undefined;
+        return `
+          <div class="bg-slate-950/90 border border-slate-800 rounded-xl p-3.5 space-y-2.5">
+            <p class="text-xs font-bold text-white leading-relaxed">${q.q}</p>
+            <div class="space-y-1.5">
+              ${q.options.map((opt, oIdx) => {
+                let btnStyle = "bg-slate-900 hover:bg-slate-800 text-slate-300 border-slate-800";
+                if (answered) {
+                  if (oIdx === q.correct) {
+                    btnStyle = "bg-emerald-950/80 border-emerald-500 text-emerald-300 font-bold";
+                  } else if (quizAnswers[qIdx] === oIdx) {
+                    btnStyle = "bg-rose-950/80 border-rose-500 text-rose-300";
+                  }
+                }
+                return `
+                  <button onclick="answerQuiz(${qIdx}, ${oIdx})" class="w-full text-right text-xs p-2 rounded-lg border transition block ${btnStyle}">
+                    ${opt}
+                  </button>
+                `;
+              }).join("")}
+            </div>
+            ${answered ? `<p class="text-[11px] text-amber-300 pt-1">${q.explanation}</p>` : ""}
+          </div>
+        `;
+      }).join("");
+    }
+
+    window.answerQuiz = function(qIdx, oIdx) {
+      quizAnswers[qIdx] = oIdx;
+      renderQuiz();
+    };
+
+    // ==================== INITIALIZE APP ====================
+    window.addEventListener("DOMContentLoaded", () => {
+      loadProgress();
+      renderRoadmapList();
+      renderStageDetail();
+      renderMultiCloud();
+      renderGlossary();
+      renderInterviewQuestions("all");
+      renderQuiz();
+    });
+  </script>
+</body>
+</html>
